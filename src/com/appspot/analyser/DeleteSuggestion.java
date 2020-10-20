@@ -8,4 +8,17 @@ import java.util.Date;
 import java.util.Map;
 
 import com.appspot.datastore.SphereName;
-import 
+import com.appspot.iclifeplanning.authentication.CalendarUtils;
+import com.google.gdata.client.calendar.CalendarService;
+import com.google.gdata.data.calendar.CalendarEventEntry;
+import com.google.gdata.util.ServiceException;
+
+public class DeleteSuggestion extends Suggestion {
+	
+	private CalendarEventEntry event;
+
+	public DeleteSuggestion(BaseCalendarSlot slot) {
+		super(slot);
+	}
+
+	public DeleteSuggestion(IEve
