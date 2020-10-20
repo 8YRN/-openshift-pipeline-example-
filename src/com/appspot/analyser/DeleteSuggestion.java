@@ -21,4 +21,17 @@ public class DeleteSuggestion extends Suggestion {
 		super(slot);
 	}
 
-	public DeleteSuggestion(IEve
+	public DeleteSuggestion(IEvent e) {
+		super(e);
+		event = e.getCalendarEvent();
+	}
+
+	public DeleteSuggestion(String title, String description,
+			Calendar startDate, Calendar endDate, double minDuration,
+			double maxDuration, boolean isRecurring, boolean canReschedule,
+			Map<SphereName, Double> s) {
+		super(title, description, startDate, endDate, minDuration, maxDuration,
+				isRecurring, canReschedule, s);
+	}
+
+	pub
