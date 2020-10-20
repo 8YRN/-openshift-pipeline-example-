@@ -766,3 +766,79 @@ public class Analyser {
 			HashMap<SphereName, SphereInfo> res = new HashMap<SphereName, SphereInfo>();
 			for (int i = 0; i < names.length; i++) {
 				SphereInfo si = new SphereInfo(values[i], values[i], 10.0);
+				res.put(names[i], si);
+			}
+			return res;
+		}
+
+		private HashMap<SphereName, Double> generateSpheres(double[] values) {
+			SphereName[] names = SphereName.values();
+			HashMap<SphereName, Double> res = new HashMap<SphereName, Double>();
+			for (int i = 0; i < names.length; i++) {
+				res.put(names[i], values[i]);
+			}
+			return res;
+		}
+
+		private List<? extends IEvent> sampleEvents() {
+			Suggestion begin = new RescheduleSuggestion("begin", null, new GregorianCalendar(2000, 3, 3, 0, 0, 0), new GregorianCalendar(2000, 3, 3,
+					0, 0, 0));
+			begin.setDeurationInterval(0, 0);
+			Suggestion end = new RescheduleSuggestion("end", null, new GregorianCalendar(2000, 3, 3, 23, 59, 59), new GregorianCalendar(2000, 3, 3,
+					23, 59, 59));
+			end.setDeurationInterval(0, 0);
+			/* Should remain a RescheduleSuggestion */
+			Suggestion s1 = new RescheduleSuggestion("reschedule 1", null, new GregorianCalendar(2000, 3, 3, 13, 0, 0), new GregorianCalendar(2000,
+					3, 3, 14, 45, 0));
+			s1.setSpheres(generateSpheres(new double[] { 0.1, 0.3, 0.3, 0.4 }));
+			s1.setDeurationInterval(30, 151);
+			s1.setReschedule(true);
+			/* Should get converted to a DeleteSuggestion */
+			Suggestion s2 = new RescheduleSuggestion("delete", null, new GregorianCalendar(2000, 3, 3, 15, 30, 0), new GregorianCalendar(2000, 3, 3,
+					15, 30, 0));
+			s2.setSpheres(generateSpheres(new double[] { 0.3, 0.3, 0.3, 0.1 }));
+			s2.setDeurationInterval(0, 40);
+			s2.setReschedule(true);
+			/* Should get converted to a RescheduleSuggestion */
+			Suggestion s3 = new InsertSuggestion("reschedule 2", null, new GregorianCalendar(2000, 3, 3, 16, 00, 0), new GregorianCalendar(2000, 3,
+					3, 18, 30, 0));
+			s3.setSpheres(generateSpheres(new double[] { 0.0, 1.0, 0.0, 0.0 }));
+			s3.setDeurationInterval(0, 170);
+			s3.setReschedule(true);
+			/* Special case - s4 and s5 fits inside s3 */
+			Suggestion s4 = new InsertSuggestion("reschedule 3", null, new GregorianCalendar(2000, 3, 3, 16, 30, 0), new GregorianCalendar(2000, 3,
+					3, 17, 20, 0));
+			s4.setSpheres(generateSpheres(new double[] { 0.0, 1.0, 0.0, 0.0 }));
+			s4.setDeurationInterval(0, 100);
+			s4.setReschedule(true);
+			Suggestion s5 = new InsertSuggestion("reschedule 4", null, new GregorianCalendar(2000, 3, 3, 16, 30, 0), new GregorianCalendar(2000, 3,
+					3, 18, 20, 0));
+			s5.setSpheres(generateSpheres(new double[] { 0.0, 1.0, 0.0, 0.0 }));
+			s5.setDeurationInterval(0, 61);
+			s5.setReschedule(true);
+			/* s6 ends before s7 does */
+			Suggestion s6 = new InsertSuggestion("reschedule 5", null, new GregorianCalendar(2000, 3, 3, 19, 30, 0), new GregorianCalendar(2000, 3,
+					3, 20, 20, 0));
+			s6.setSpheres(generateSpheres(new double[] { 0.0, 1.0, 0.0, 0.0 }));
+			s6.setDeurationInterval(0, 60);
+			s6.setReschedule(true);
+			Suggestion s7 = new InsertSuggestion("reschedule 6", null, new GregorianCalendar(2000, 3, 3, 19, 40, 0), new GregorianCalendar(2000, 3,
+					3, 21, 20, 0));
+			s7.setSpheres(generateSpheres(new double[] { 0.0, 1.0, 0.0, 0.0 }));
+			s7.setDeurationInterval(0, 180);
+			s7.setReschedule(false);
+			List<Suggestion> list = new LinkedList<Suggestion>();
+			list.add(begin);
+			list.add(s1);
+			list.add(s2);
+			list.add(s3);
+			list.add(s4);
+			list.add(s5);
+			list.add(s6);
+			list.add(s7);
+			list.add(end);
+			Collections.sort(list);
+			return list;
+		}
+	}
+}
