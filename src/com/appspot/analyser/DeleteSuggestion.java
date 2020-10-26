@@ -34,4 +34,17 @@ public class DeleteSuggestion extends Suggestion {
 				isRecurring, canReschedule, s);
 	}
 
-	pub
+	public DeleteSuggestion(String title, String description,
+			Calendar startDate, Calendar endDate) {
+		super(title, description, startDate, endDate);
+	}
+
+	public String getType() {
+		return "Remove";
+	}
+
+	protected void makePersistentInternal() {
+		try {
+			CalendarService clientCopy = CalendarUtils.client;
+			clientCopy.getRequestFactory().setHeader("If-Match", "*");
+			URL deleteUrl = new URL(event.getEditLink().getHref());
