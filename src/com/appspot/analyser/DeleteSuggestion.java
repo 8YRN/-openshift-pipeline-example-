@@ -48,3 +48,20 @@ public class DeleteSuggestion extends Suggestion {
 			CalendarService clientCopy = CalendarUtils.client;
 			clientCopy.getRequestFactory().setHeader("If-Match", "*");
 			URL deleteUrl = new URL(event.getEditLink().getHref());
+			clientCopy.delete(deleteUrl);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ServiceException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public CalendarEventEntry getCalendarEvent() {
+		return null;
+	}
+
+	public String toString() {
+		SimpleDateFormat date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm");
+		return getType() + " " + title 
+		    + " which is currently scheduled for "
+		    + date.format(new D
