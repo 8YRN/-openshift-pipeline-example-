@@ -64,4 +64,6 @@ public class DeleteSuggestion extends Suggestion {
 		SimpleDateFormat date = new SimpleDateFormat("EEE, d MMM yyyy HH:mm");
 		return getType() + " " + title 
 		    + " which is currently scheduled for "
-		    + date.format(new D
+		    + date.format(new Date(startDate));
+	}
+}
