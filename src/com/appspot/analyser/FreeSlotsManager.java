@@ -28,4 +28,13 @@ public class FreeSlotsManager {
 		freeSlots = slots;
 	}
 	
-	//Check whether ther
+	//Check whether there are any possible slots to allocate event and create corresponding cirtual calendar
+	public CalendarStatus checkProposal(Proposal proposal) {
+		List<BaseCalendarSlot> possibleSlots = getPossibleSlots(proposal);
+		if (possibleSlots != null) {
+			return new CalendarStatus(proposal, status, Utilities.copyFreeSlots(freeSlots), possibleSlots);
+		}
+		return null;
+	}
+	
+	//Generate all possible slots, taking into account m
