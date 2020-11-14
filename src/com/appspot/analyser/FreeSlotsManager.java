@@ -37,4 +37,11 @@ public class FreeSlotsManager {
 		return null;
 	}
 	
-	//Generate all possible slots, taking into account m
+	//Generate all possible slots, taking into account max duration and possible time slot
+	public List<BaseCalendarSlot> getPossibleSlots(Proposal proposal) {
+		List<BaseCalendarSlot> ret = new LinkedList<BaseCalendarSlot>();
+		Pair<Calendar, Calendar> possibleTimeSlot = proposal.getPossibleTimeSlot();
+		Double minDuration = proposal.getDurationInterval().getFirst();
+		Double maxDuration = proposal.getDurationInterval().getSecond();
+		double nextDuration, currentMax = 0;
+		Calendar slotStartDate, slot
