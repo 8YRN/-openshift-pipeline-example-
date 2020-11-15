@@ -44,4 +44,12 @@ public class FreeSlotsManager {
 		Double minDuration = proposal.getDurationInterval().getFirst();
 		Double maxDuration = proposal.getDurationInterval().getSecond();
 		double nextDuration, currentMax = 0;
-		Calendar slotStartDate, slot
+		Calendar slotStartDate, slotEndDate;
+		for (BaseCalendarSlot freeSlot : freeSlots) {
+			BaseCalendarSlot hourSlot = generateStartingSlot(freeSlot.getStartDate(), possibleTimeSlot);
+			Calendar possibleStartDate = hourSlot.getStartDate();
+			Calendar possibleEndDate = hourSlot.getEndDate();
+			slotStartDate = freeSlot.getStartDate();
+			slotEndDate = freeSlot.getEndDate();
+			/* proposal fits inside the free slot */
+			while (possi
