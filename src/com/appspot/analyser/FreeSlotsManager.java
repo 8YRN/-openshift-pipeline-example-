@@ -52,4 +52,10 @@ public class FreeSlotsManager {
 			slotStartDate = freeSlot.getStartDate();
 			slotEndDate = freeSlot.getEndDate();
 			/* proposal fits inside the free slot */
-			while (possi
+			while (possibleStartDate.compareTo(slotEndDate) < 0) {
+				if (possibleEndDate.compareTo(slotStartDate) > 0 && possibleStartDate.compareTo(slotEndDate) < 0) {
+
+					Calendar start = Utilities.max(possibleStartDate, slotStartDate);
+
+					Calendar tmp = new GregorianCalendar(start.get(Calendar.YEAR), start.get(Calendar.MONTH), start.get(Calendar.DAY_OF_MONTH), start
+							.get(Calendar.HOUR_OF_DAY), start.get(Cal
