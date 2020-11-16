@@ -58,4 +58,14 @@ public class FreeSlotsManager {
 					Calendar start = Utilities.max(possibleStartDate, slotStartDate);
 
 					Calendar tmp = new GregorianCalendar(start.get(Calendar.YEAR), start.get(Calendar.MONTH), start.get(Calendar.DAY_OF_MONTH), start
-							.get(Calendar.HOUR_OF_DAY), start.get(Cal
+							.get(Calendar.HOUR_OF_DAY), start.get(Calendar.MINUTE), 0);
+					tmp.add(Calendar.MINUTE, (int) ((double) maxDuration));
+
+					Calendar endSlot = Utilities.min(possibleEndDate, slotEndDate);
+
+					Calendar end = Utilities.min(tmp, endSlot);
+
+					BaseCalendarSlot candidate = new BaseCalendarSlot("Best fit", null, start, end);
+					nextDuration = candidate.getDuration();
+					if (nextDuration > minDuration) {
+						ret.add(candidate
