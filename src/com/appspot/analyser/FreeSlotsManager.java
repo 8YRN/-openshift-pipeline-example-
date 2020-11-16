@@ -68,4 +68,23 @@ public class FreeSlotsManager {
 					BaseCalendarSlot candidate = new BaseCalendarSlot("Best fit", null, start, end);
 					nextDuration = candidate.getDuration();
 					if (nextDuration > minDuration) {
-						ret.add(candidate
+						ret.add(candidate);
+						if (nextDuration > currentMax)
+							currentMax = nextDuration;
+					}
+				}
+				possibleStartDate.add(Calendar.DAY_OF_MONTH, 1);
+				possibleEndDate.add(Calendar.DAY_OF_MONTH, 1);
+			}
+		}
+		if (!ret.isEmpty()) {
+			if (currentMax > 0) {
+				proposal.getDurationInterval().setSecond(currentMax);
+			}
+			Collections.sort(ret);
+			return ret;
+		}
+		return null;
+	}
+	
+	//Check whether our event's max duration has to be changed
