@@ -121,4 +121,12 @@ public class FreeSlotsManager {
 		List<BaseCalendarSlot> toBeUpdated = new LinkedList<BaseCalendarSlot>();
 		for (BaseCalendarSlot freeSlot : freeSlots) {
 			Calendar slotStartDate = freeSlot.getStartDate();
-			Calendar slo
+			Calendar slotEndDate = freeSlot.getEndDate();
+			if (takenEndDate.compareTo(slotStartDate) > 0 && takenStartDate.compareTo(slotEndDate) < 0)
+				toBeUpdated.add(freeSlot);
+		}
+		for (BaseCalendarSlot slot : toBeUpdated) {
+			Calendar slotStartDate = slot.getStartDate();
+			Calendar slotEndDate = slot.getEndDate();
+			Calendar start = Utilities.max(takenStartDate, slotStartDate);
+			Calendar end = Utilities.min(takenEndDate, 
