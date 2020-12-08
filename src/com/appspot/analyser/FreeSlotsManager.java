@@ -99,4 +99,15 @@ public class FreeSlotsManager {
 		}
 		for(BaseCalendarSlot freeSlot : freeSlots){
 			if(freeSlot.getStartDate().equals(endDate)){
-				Pair<Double,Double> possibleDurat
+				Pair<Double,Double> possibleDuration = event.getDurationInterval();
+				possibleDuration.setSecond(Math.min(possibleDuration.getSecond(), 
+						event.getDuration() + freeSlot.getDuration()));
+				break;
+			}
+		}
+	}
+	
+	//Check if any slots must disappear due to new events in calendar
+	public void updateCurrentSlots(CalendarStatus stat) {
+		IEvent takenSlot = stat.getEvent();
+		Calendar takenStartDate = takenSlot.getStartDa
