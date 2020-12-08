@@ -87,4 +87,16 @@ public class FreeSlotsManager {
 		return null;
 	}
 	
-	//Check whether our event's max duration has to be changed
+	//Check whether our event's max duration has to be changed due to lack of free slots
+	public void updateEventMaxDuration() {
+		IEvent event = status.getEvent();
+		Calendar endDate = event.getEndDate();
+		if (!status.containsProposal()) {
+			if (status.getAdditionalEventTime() > 0)
+				endDate.add(Calendar.MINUTE, (int) status.getAdditionalEventTime());
+			else
+				return;
+		}
+		for(BaseCalendarSlot freeSlot : freeSlots){
+			if(freeSlot.getStartDate().equals(endDate)){
+				Pair<Double,Double> possibleDurat
