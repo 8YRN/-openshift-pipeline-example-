@@ -110,4 +110,15 @@ public class FreeSlotsManager {
 	//Check if any slots must disappear due to new events in calendar
 	public void updateCurrentSlots(CalendarStatus stat) {
 		IEvent takenSlot = stat.getEvent();
-		Calendar takenStartDate = takenSlot.getStartDa
+		Calendar takenStartDate = takenSlot.getStartDate();
+		Calendar takenEndDate = takenSlot.getEndDate();
+		if (!stat.containsProposal()) {
+			if (stat.getAdditionalEventTime() > 0)
+				takenEndDate.add(Calendar.MINUTE, (int) stat.getAdditionalEventTime());
+			else
+				return;
+		}
+		List<BaseCalendarSlot> toBeUpdated = new LinkedList<BaseCalendarSlot>();
+		for (BaseCalendarSlot freeSlot : freeSlots) {
+			Calendar slotStartDate = freeSlot.getStartDate();
+			Calendar slo
