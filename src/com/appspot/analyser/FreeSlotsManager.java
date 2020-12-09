@@ -142,4 +142,9 @@ public class FreeSlotsManager {
 	
 	//Start slot for analysis of free slots
 	private BaseCalendarSlot generateStartingSlot(Calendar slotStart, Pair<Calendar, Calendar> possibleTimeSlot) {
-		Calendar possibleSta
+		Calendar possibleStart = possibleTimeSlot.getFirst();
+		Calendar possibleEnd = possibleTimeSlot.getSecond();
+		Calendar start = new GregorianCalendar(slotStart.get(Calendar.YEAR), slotStart.get(Calendar.MONTH), slotStart.get(Calendar.DAY_OF_MONTH),
+				possibleStart.get(Calendar.HOUR_OF_DAY), possibleStart.get(Calendar.MINUTE), 0);
+		Calendar end = new GregorianCalendar(slotStart.get(Calendar.YEAR), slotStart.get(Calendar.MONTH), slotStart.get(Calendar.DAY_OF_MONTH),
+	
