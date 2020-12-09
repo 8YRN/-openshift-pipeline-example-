@@ -129,4 +129,17 @@ public class FreeSlotsManager {
 			Calendar slotStartDate = slot.getStartDate();
 			Calendar slotEndDate = slot.getEndDate();
 			Calendar start = Utilities.max(takenStartDate, slotStartDate);
-			Calendar end = Utilities.min(takenEndDate, 
+			Calendar end = Utilities.min(takenEndDate, slotEndDate);
+			BaseCalendarSlot chosen = new BaseCalendarSlot("Free Slot", null, start, end);
+			freeSlots.remove(slot);
+			this.splitSlot(slot, chosen);
+		}
+	}
+	
+	public void sortFreeSlots(){
+		Collections.sort(freeSlots);
+	}
+	
+	//Start slot for analysis of free slots
+	private BaseCalendarSlot generateStartingSlot(Calendar slotStart, Pair<Calendar, Calendar> possibleTimeSlot) {
+		Calendar possibleSta
