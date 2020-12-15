@@ -147,4 +147,13 @@ public class FreeSlotsManager {
 		Calendar start = new GregorianCalendar(slotStart.get(Calendar.YEAR), slotStart.get(Calendar.MONTH), slotStart.get(Calendar.DAY_OF_MONTH),
 				possibleStart.get(Calendar.HOUR_OF_DAY), possibleStart.get(Calendar.MINUTE), 0);
 		Calendar end = new GregorianCalendar(slotStart.get(Calendar.YEAR), slotStart.get(Calendar.MONTH), slotStart.get(Calendar.DAY_OF_MONTH),
-	
+				possibleEnd.get(Calendar.HOUR_OF_DAY), possibleEnd.get(Calendar.MINUTE), 0);
+		if (possibleStart.get(Calendar.HOUR_OF_DAY) > possibleEnd.get(Calendar.HOUR_OF_DAY)) {
+			start.add(Calendar.DAY_OF_MONTH, -1);
+		}
+		return new BaseCalendarSlot("Best fit", null, start, end);
+	}
+
+	/* If possible, pick a free slot for this event */
+	private void chooseSlot(List<BaseCalendarSlot> possibleSlots) {
+		/* possibleSlots = when an e
