@@ -156,4 +156,14 @@ public class FreeSlotsManager {
 
 	/* If possible, pick a free slot for this event */
 	private void chooseSlot(List<BaseCalendarSlot> possibleSlots) {
-		/* possibleSlots = when an e
+		/* possibleSlots = when an event can be scheduled */
+		IEvent event = status.getEvent();
+		BaseCalendarSlot chosenSlot = null;
+		double eventDuration = status.getEvent().getDuration() + status.getAdditionalEventTime();
+		int start = 0, end = 0;
+		//Best fit algorithm used below
+		for (BaseCalendarSlot slot : possibleSlots) {
+			if (chosenSlot == null) {
+				if (slot.getDuration() >= eventDuration) {
+					end = start + 1;
+				
