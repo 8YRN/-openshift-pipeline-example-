@@ -166,4 +166,19 @@ public class FreeSlotsManager {
 			if (chosenSlot == null) {
 				if (slot.getDuration() >= eventDuration) {
 					end = start + 1;
-				
+					chosenSlot = slot;
+				} else
+					start++;
+
+			} else if (slot.compareTo(chosenSlot) == 0)
+				end++;
+			else
+				break;
+		}
+		//Choose among equally long slots one at random
+		Random rand = new Random();
+		chosenSlot = possibleSlots.get(rand.nextInt(end - start) + start);
+		chosenSlot.setDuration(eventDuration);
+		int index = 0;
+		BaseCalendarSlot currentSlot = freeSlots.get(index);
+		while (!(curr
