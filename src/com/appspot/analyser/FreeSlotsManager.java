@@ -181,4 +181,15 @@ public class FreeSlotsManager {
 		chosenSlot.setDuration(eventDuration);
 		int index = 0;
 		BaseCalendarSlot currentSlot = freeSlots.get(index);
-		while (!(curr
+		while (!(currentSlot.getStartDate().compareTo(chosenSlot.getStartDate()) <= 0 && currentSlot.getEndDate().compareTo(chosenSlot.getEndDate()) >= 0)) {
+			index++;
+			currentSlot = freeSlots.get(index);
+		}
+		BaseCalendarSlot removedSlot = freeSlots.remove(index);
+		splitSlot(removedSlot, chosenSlot);
+		sortFreeSlots();
+		event.setStartDate(chosenSlot.getStartDate());
+		event.setEndDate(chosenSlot.getEndDate());
+	}
+	
+	/
