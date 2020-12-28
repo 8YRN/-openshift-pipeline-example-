@@ -192,4 +192,10 @@ public class FreeSlotsManager {
 		event.setEndDate(chosenSlot.getEndDate());
 	}
 	
-	/
+	//Split slot and add any addtional as a result
+	private void splitSlot(BaseCalendarSlot removedSlot, BaseCalendarSlot chosenSlot) {
+		if (removedSlot.getStartDate().before(chosenSlot.getStartDate())) {
+			freeSlots.add(new BaseCalendarSlot("Free Slot", null, removedSlot.getStartDate(), chosenSlot.getStartDate()));
+		}
+		if (removedSlot.getEndDate().after(chosenSlot.getEndDate())) {
+			freeSl
