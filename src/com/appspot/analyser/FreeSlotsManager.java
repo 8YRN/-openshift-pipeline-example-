@@ -198,4 +198,11 @@ public class FreeSlotsManager {
 			freeSlots.add(new BaseCalendarSlot("Free Slot", null, removedSlot.getStartDate(), chosenSlot.getStartDate()));
 		}
 		if (removedSlot.getEndDate().after(chosenSlot.getEndDate())) {
-			freeSl
+			freeSlots.add(new BaseCalendarSlot("Free Slot", null, chosenSlot.getEndDate(), removedSlot.getEndDate()));
+		}
+	}
+
+	public List<BaseCalendarSlot> getFreeSlots() {
+		return freeSlots;
+	}
+}
