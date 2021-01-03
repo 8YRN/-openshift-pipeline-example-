@@ -22,4 +22,21 @@ public enum SphereName {
 	RECREATION {
 		@Override
 		public Double defaultValue() {
-			r
+			return 0.25;
+		}
+	};
+
+	public abstract Double defaultValue();
+
+	public static SphereName getSphereName(String name) {
+		if (name.toUpperCase().equals("HEALTH"))
+			return SphereName.HEALTH;
+		if (name.toUpperCase().equals("WORK"))
+			return SphereName.WORK;
+		if (name.toUpperCase().equals("FAMILY"))
+			return SphereName.FAMILY;
+		if (name.toUpperCase().equals("RECREATION"))
+			return SphereName.RECREATION;
+		return null;
+	}
+}
