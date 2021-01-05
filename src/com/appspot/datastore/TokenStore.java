@@ -15,4 +15,23 @@ public class TokenStore {
 		catch (JDOObjectNotFoundException e) {
 			return null;
 		} 
-		fi
+		finally {
+			pm.close();
+		}
+	}
+
+	public static void addToken(String id, String sessionToken) {
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		try {
+			Token token = new Token(id, sessionToken);
+			pm.makePersistent(token);
+		} 
+		finally {
+			pm.close();
+		}
+	}
+
+	public static void deleteTokend(String id) {
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		try {
+			Token token = pm.getO
