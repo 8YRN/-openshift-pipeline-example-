@@ -12,4 +12,14 @@ public class UserDesiredLifeBalance extends BaseDataObject {
 	@Persistent
 	private String userID;
 	@Persistent
-	priva
+	private Long dateRegistered;
+	@Persistent(serialized="true", defaultFetchGroup = "true")
+	private HashMap<SphereName, Double> spherePreferences;
+	
+	public UserDesiredLifeBalance(String userID, Long dateRegistered,
+			HashMap<SphereName, Double> spherePreferences) {
+		super();
+		this.userID = userID;
+		this.spherePreferences = spherePreferences;
+		this.dateRegistered = dateRegistered;
+		this.key = userID+dateReg
