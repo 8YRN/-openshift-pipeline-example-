@@ -7,4 +7,12 @@ import javax.jdo.PersistenceManager;
 
 
 public class UserDesiredLifeBalanceStore {
-	 public static List<UserDesiredLifeBalance> 
+	 public static List<UserDesiredLifeBalance> getUserDesiredLifeBalances(String userID) {
+		    PersistenceManager pm = PMF.get().getPersistenceManager();
+
+		    try {
+		      List<UserDesiredLifeBalance> dataProfiles 
+		          = (List<UserDesiredLifeBalance>) pm.detachCopyAll((List<UserDesiredLifeBalance>)
+		        		  pm.newQuery("SELECT FROM " + 
+		        		  UserDesiredLifeBalance.class.getName() + 
+		        		  " WHERE userID==\"" + userID + "\"
