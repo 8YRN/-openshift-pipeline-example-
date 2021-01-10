@@ -22,4 +22,14 @@ public class UserDesiredLifeBalance extends BaseDataObject {
 		this.userID = userID;
 		this.spherePreferences = spherePreferences;
 		this.dateRegistered = dateRegistered;
-		this.key = userID+dateReg
+		this.key = userID+dateRegistered.toString();
+	}
+
+	public HashMap<SphereName, Double> getSpherePreferences() {
+		return spherePreferences;
+	}
+
+	public long getDateRegistered() {
+		return dateRegistered;
+	}
+}
