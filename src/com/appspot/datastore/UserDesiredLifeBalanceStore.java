@@ -15,4 +15,19 @@ public class UserDesiredLifeBalanceStore {
 		          = (List<UserDesiredLifeBalance>) pm.detachCopyAll((List<UserDesiredLifeBalance>)
 		        		  pm.newQuery("SELECT FROM " + 
 		        		  UserDesiredLifeBalance.class.getName() + 
-		        		  " WHERE userID==\"" + userID + "\"
+		        		  " WHERE userID==\"" + userID + "\"" + " ORDER BY weekNumber").execute());
+
+		      return dataProfiles;
+		    } catch (JDOObjectNotFoundException e) {
+		      System.out.println("error!");
+		      return null;
+		    } finally {
+		      pm.close();
+		    }
+		  }
+
+		  public static void addDesiredLifeBalance(UserDesiredLifeBalance profile) {
+		    PersistenceManager pm = PMF.get().getPersistenceManager();
+
+		    try {
+		      pm.makePersistent(pr
