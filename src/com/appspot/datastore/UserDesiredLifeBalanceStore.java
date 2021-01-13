@@ -30,4 +30,9 @@ public class UserDesiredLifeBalanceStore {
 		    PersistenceManager pm = PMF.get().getPersistenceManager();
 
 		    try {
-		      pm.makePersistent(pr
+		      pm.makePersistent(profile);
+		    } finally {
+		      pm.close();
+		    }
+		  }
+}
