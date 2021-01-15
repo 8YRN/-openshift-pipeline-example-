@@ -27,4 +27,17 @@ public class UserProfileStore {
 
   
   /*
-   * Returns all users. Usef
+   * Returns all users. Useful for debugging.
+   */
+  public static List<UserProfile> getAllUserProfiles()
+  {
+  	PersistenceManager pm = PMF.get().getPersistenceManager();
+
+    try
+    {
+    	List<UserProfile> userProfiles = (List<UserProfile>) pm.detachCopyAll((List<UserProfile>)
+    			pm.newQuery("SELECT FROM " + UserProfile.class.getName() + " ORDER BY userID").execute());
+
+      return userProfiles;
+    } catch (JDOObjectNotFoundException e) {
+      ret
