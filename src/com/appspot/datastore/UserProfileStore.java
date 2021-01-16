@@ -40,4 +40,21 @@ public class UserProfileStore {
 
       return userProfiles;
     } catch (JDOObjectNotFoundException e) {
-      ret
+      return null;
+    } finally {
+      pm.close();
+    }
+  }
+  
+  /*
+   * Deletes given user from the datastore. Deletes their WeeklyProfiles as well.
+   * Returns true on success.
+   */
+  public static String deleteUserProfile(String userID) {
+    PersistenceManager pm = PMF.get().getPersistenceManager();
+
+    String status = "";
+    try
+    {
+    	// delete user
+    	pm.deletePersistent(pm.ge
