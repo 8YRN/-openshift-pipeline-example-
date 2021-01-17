@@ -57,4 +57,17 @@ public class UserProfileStore {
     try
     {
     	// delete user
-    	pm.deletePersistent(pm.ge
+    	pm.deletePersistent(pm.getObjectById(UserProfile.class, userID));
+    	status = status.concat("Successfully removed user: " + userID + "\n");
+    }
+    catch (JDOObjectNotFoundException e)
+    {
+    	status = status.concat("Failed to remove user: " + userID + "\n");
+    }
+    finally
+    {
+      pm.close();
+    }
+   	// delete their WeeklyProfiles 
+   	int profilesRemoved = WeeklyDataProfileStore.removeUserWeeklyDataProfiles(userID);
+ 
