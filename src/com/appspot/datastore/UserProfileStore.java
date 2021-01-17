@@ -70,4 +70,15 @@ public class UserProfileStore {
     }
    	// delete their WeeklyProfiles 
    	int profilesRemoved = WeeklyDataProfileStore.removeUserWeeklyDataProfiles(userID);
- 
+   	if(profilesRemoved>=0)
+   	{
+   		status = status.concat("Successfully removed " + profilesRemoved + " user's Weekly Profiles.");
+   	}
+   	else
+   	{
+   		status = status.concat("Failed to remove user's Weekly Profiles.");
+   	}
+   	
+    return status;
+  }
+}
