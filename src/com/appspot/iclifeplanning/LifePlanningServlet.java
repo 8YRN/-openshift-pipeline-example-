@@ -146,3 +146,27 @@ public class LifePlanningServlet extends HttpServlet {
 		} catch (ServiceException e) {
 			authService.revokeToken();
 			response.sendRedirect(request.getRequestURI());
+			return;
+		}
+
+		response.setContentType("text/html");
+		response.getWriter().println("<h3>Your calendars: </h3>");
+
+		for (int i = 0; i < resultFeed.getEntries().size(); i++) {
+			CalendarEntry entry = resultFeed.getEntries().get(i);
+			response.getWriter()
+			.println(
+					"<ul><li>" + entry.getTitle().getPlainText()
+					+ "</li></ul>");
+		}
+
+		String logOutURL = authService.getLogOutURL(request);
+		response
+		.getWriter()
+		.println(
+				"<a href=\""
+				+ logOutURL
+				+ "\">"
+				+ "Log Out (will log you out of all google services)</a>");
+	}
+}
