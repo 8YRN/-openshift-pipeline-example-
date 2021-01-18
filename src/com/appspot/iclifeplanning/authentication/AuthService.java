@@ -33,3 +33,94 @@ public class AuthService {
 
 	/**Feed-url giving access to all calendars accesible by a give user*/
 	public static final  String CALENDAR_FULL_FEED_REQUEST_URL 
+	    = "http://www.google.com/calendar/feeds/default/allcalendars/full";
+
+	public static final  String DEFAULT_FULL_FEED_REQUEST_URL 
+		= "http://www.google.com/calendar/feeds/default";
+	
+	public static CalendarService client = new CalendarService("ic-lifeplanning-v1");
+
+	/**Constructor for singleton pattern*/
+	private AuthService() {}
+	
+	public static AuthService getAuthServiceInstance() {
+		if (authServiceInstance == null) authServiceInstance = new AuthService();
+		return authServiceInstance;
+	}
+	
+	public void requestCalendarAccess(HttpServletRequest request, HttpServletResponse response)
+	    throws IOException{
+	      // If no session token is set, allow users to authorize this sample app
+	      // to fetch personal Google Data feeds by directing them to an
+	      // authorization page.
+	      // Generate AuthSub URL
+	      String nextUrl = request.getRequestURL().toString();
+	      String requestUrl = AuthSubUtil.getRequestUrl(nextUrl,
+	          DEFAULT_FULL_FEED_REQUEST_URL, false, true);
+	      
+	      // Write AuthSub URL to response
+	      response.setContentType("text/html");
+	      response.getWriter().print("<h3>A Google Data session token could not " +
+	          "be found for your account.</h3>");
+	      response.getWriter().print("<p>In order to see your data, you must " +
+	          "first authorize access to your personal feeds. Start this " +
+	        "process by choosing a service from the list below:</p>");
+	      response.getWriter().print("<ul><li><a href=\"" + requestUrl + "\">" +
+	          "Google Calendar</a></li></ul>");
+	}
+
+	/**
+	 * Retrieves a token enabling access to Google calendar for the currently logged-in user.
+	 * You might think this method is not working well or is sub-optimal. You ARE wrong.
+	 * It's fine. Trust me.
+	 */
+	public String getToken(HttpServletRequest request, HttpServletResponse response) 
+	    throws IOException{
+		
+		String sessionToken = null;
+		// Check if the user is logged-in to the application and whether his token is already
+		// in the datastore.
+	    if (userService.isUserLoggedIn()) {
+	        sessionToken = TokenStore.getToken(userService.getCurrentUser().getUserId());
+        } else {
+        	response.sendRedirect(userService.createLoginURL(request.getRequestURI()));
+        }
+	    
+	    try {
+	      String authToken = AuthSubUtil.getTokenFromReply(
+	          request.getQueryString());
+
+	      // Upgrade the single-use token to a multi-use session token.
+	      sessionToken = AuthSubUtil.exchangeForSessionToken(authToken, null);
+	    } catch (AuthenticationException e) {
+	    	System.out.println("Authentication exception");
+	    } catch (GeneralSecurityException e) {
+	    	System.out.println("GeneralSecurityException");
+	    } catch (NullPointerException e) {
+	    	System.out.println("NullPointerException");
+	    }
+
+	    return sessionToken;
+	}
+
+	/** Stores token for the currently logged-in user in the datastore */
+	public void registerToken(String token){
+	 if (userService.isUserLoggedIn()) {
+          User user = userService.getCurrentUser();
+          System.out.println("Saving token");
+          TokenStore.addToken(user.getUserId(), token);
+      }
+	}
+
+	public String getLogOutURL(HttpServletRequest request) {
+		return userService.createLogoutURL(request.getRequestURI());
+	}
+
+	public void revokeToken() {
+		TokenStore.deleteTokend(userService.getCurrentUser().getUserId());
+	}
+
+	public String getCurrentUserId() {
+		return userService.getCurrentUser().getUserId();
+	}
+}
