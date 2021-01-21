@@ -30,4 +30,14 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gdata.client.calendar.CalendarService;
 import com.google.gdata.client.http.AuthSubUtil;
 import com.google.gdata.data.Link;
-import com.google.gdata.data.calendar.CalendarEn
+import com.google.gdata.data.calendar.CalendarEntry;
+import com.google.gdata.data.calendar.CalendarFeed;
+import com.google.gdata.util.AuthenticationException;
+import com.google.gdata.util.ServiceException;
+
+/**
+ * Class responsible for managing the authentication within the application.
+ * Uses Google account/password for token-based authentication. Majority of
+ * issues are managed by Google services, mainly by the UserService class.
+ * 
+ * @author Agnieszka Magda M
