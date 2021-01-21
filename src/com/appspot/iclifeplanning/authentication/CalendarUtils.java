@@ -22,4 +22,12 @@ import com.appspot.datastore.SphereName;
 import com.appspot.datastore.Token;
 import com.appspot.datastore.TokenStore;
 import com.appspot.datastore.UserProfile;
-import com.appspot.datastore.User
+import com.appspot.datastore.UserProfileStore;
+import com.appspot.iclifeplanning.charts.utils.AddUserDataServlet;
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
+import com.google.gdata.client.calendar.CalendarService;
+import com.google.gdata.client.http.AuthSubUtil;
+import com.google.gdata.data.Link;
+import com.google.gdata.data.calendar.CalendarEn
