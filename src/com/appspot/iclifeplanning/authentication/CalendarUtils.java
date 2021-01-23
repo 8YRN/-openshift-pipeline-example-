@@ -52,4 +52,14 @@ public class CalendarUtils {
 	private static UserService userService = UserServiceFactory.getUserService();
 
 	/** Feed-url giving access to all calendars accesible by a give user */
-	pu
+	public static final String CALENDAR_FULL_FEED_REQUEST_URL = "http://www.google.com/calendar/feeds/default/allcalendars/full";
+
+	public static final String DEFAULT_FULL_FEED_REQUEST_URL = "http://www.google.com/calendar/feeds/default";
+
+	public static CalendarService client = new CalendarService("ic-lifeplanning-v1");
+
+	/** Constructor for singleton pattern */
+	private CalendarUtils() {
+	}
+
+	public static CalendarUtils getCa
