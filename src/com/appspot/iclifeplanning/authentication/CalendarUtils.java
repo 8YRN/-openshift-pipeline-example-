@@ -40,4 +40,16 @@ import com.google.gdata.util.ServiceException;
  * Uses Google account/password for token-based authentication. Majority of
  * issues are managed by Google services, mainly by the UserService class.
  * 
- * @author Agnieszka Magda M
+ * @author Agnieszka Magda Madurska (amm208@doc.ic.ac.uk)
+ * 
+ */
+public class CalendarUtils {
+
+	/** AuthService instance for singleton-based design */
+	private static CalendarUtils calendarUtilsInstance = null;
+
+	/** Service used to monitor the currently the users of the application */
+	private static UserService userService = UserServiceFactory.getUserService();
+
+	/** Feed-url giving access to all calendars accesible by a give user */
+	pu
