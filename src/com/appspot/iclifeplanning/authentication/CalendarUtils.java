@@ -62,4 +62,18 @@ public class CalendarUtils {
 	private CalendarUtils() {
 	}
 
-	public static CalendarUtils getCa
+	public static CalendarUtils getCalendarUtils() {
+		if (calendarUtilsInstance == null) {
+			calendarUtilsInstance = new CalendarUtils();
+		}
+		return calendarUtilsInstance;
+	}
+
+	public String getCalendarAccessUrl(String nextUrl) throws IOException {
+
+		String requestUrl = AuthSubUtil.getRequestUrl(nextUrl, DEFAULT_FULL_FEED_REQUEST_URL, false, true);
+
+		return requestUrl;
+	}
+
+	/** Stores token for the currentl
