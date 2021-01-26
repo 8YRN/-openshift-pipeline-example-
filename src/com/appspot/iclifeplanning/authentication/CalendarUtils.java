@@ -76,4 +76,13 @@ public class CalendarUtils {
 		return requestUrl;
 	}
 
-	/** Stores token for the currentl
+	/** Stores token for the currently logged-in user in the datastore */
+	public void setTokenFromReply(String reply) {
+		String authToken = AuthSubUtil.getTokenFromReply(reply);
+		try {
+			authToken = AuthSubUtil.exchangeForSessionToken(authToken, null);
+			client.setAuthSubToken(authToken);
+			User user = userService.getCurrentUser();
+			TokenStore.addToken(user.getUserId(), authToken);
+		} catch (AuthenticationException e) {
+			// TODO Auto-gener
