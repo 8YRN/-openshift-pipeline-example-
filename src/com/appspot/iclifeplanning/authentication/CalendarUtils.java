@@ -85,4 +85,19 @@ public class CalendarUtils {
 			User user = userService.getCurrentUser();
 			TokenStore.addToken(user.getUserId(), authToken);
 		} catch (AuthenticationException e) {
-			// TODO Auto-gener
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (GeneralSecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static String getLogOutURL(HttpServletRequest request) {
+		return userService.createLogoutURL(request.getRequestURI());
+	}
+
+	public stat
