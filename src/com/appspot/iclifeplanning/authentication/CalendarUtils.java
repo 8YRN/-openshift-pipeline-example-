@@ -100,4 +100,18 @@ public class CalendarUtils {
 		return userService.createLogoutURL(request.getRequestURI());
 	}
 
-	public stat
+	public static String getCurrentUserId() {
+		return userService.getCurrentUser().getUserId();
+	}
+
+	public Set<String> getCalendarURLs() throws IOException, TokenException {
+		Set<String> urls = new HashSet<String>();
+
+		URL calendarFeedUrl = null;
+		try {
+			calendarFeedUrl = new URL(AuthService.CALENDAR_FULL_FEED_REQUEST_URL);
+		} catch (MalformedURLException e1) {
+			assert false;
+		}
+
+		Cale
