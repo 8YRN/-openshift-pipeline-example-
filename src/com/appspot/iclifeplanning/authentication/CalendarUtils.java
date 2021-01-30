@@ -114,4 +114,14 @@ public class CalendarUtils {
 			assert false;
 		}
 
-		Cale
+		CalendarFeed calendarResultFeed = null;
+
+		// Connect to Google Calendar and gather data
+		try {
+			client.setAuthSubToken(TokenStore.getToken(getCurrentUserId()));
+			calendarResultFeed = client.getFeed(calendarFeedUrl, CalendarFeed.class);
+		} catch (ServiceException e) {
+			TokenStore.deleteTokend(userService.getCurrentUser().getUserId());
+			// e.printStackTrace();
+			throw new TokenException();
+		} catch (MalformedURLExceptio
