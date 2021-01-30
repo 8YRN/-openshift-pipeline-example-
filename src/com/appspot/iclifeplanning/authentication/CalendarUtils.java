@@ -124,4 +124,17 @@ public class CalendarUtils {
 			TokenStore.deleteTokend(userService.getCurrentUser().getUserId());
 			// e.printStackTrace();
 			throw new TokenException();
-		} catch (MalformedURLExceptio
+		} catch (MalformedURLException e1) {
+			assert false;
+		}
+
+		CalendarEntry calendarEntry;
+		Link eventFeedLink;
+		String eventFeedUrl = null;
+
+		for (int i = 0; i < calendarResultFeed.getEntries().size(); i++) {
+			calendarEntry = calendarResultFeed.getEntries().get(i);
+			eventFeedLink = calendarEntry.getLink("http://schemas.google.com/gCal/2005#eventFeed", null);
+
+			eventFeedUrl = eventFeedLink.getHref();
+			eventFeedUrl = eventFeedUrl.substri
