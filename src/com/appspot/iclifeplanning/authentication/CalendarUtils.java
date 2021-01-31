@@ -137,4 +137,18 @@ public class CalendarUtils {
 			eventFeedLink = calendarEntry.getLink("http://schemas.google.com/gCal/2005#eventFeed", null);
 
 			eventFeedUrl = eventFeedLink.getHref();
-			eventFeedUrl = eventFeedUrl.substri
+			eventFeedUrl = eventFeedUrl.substring(37, eventFeedUrl.length() - 13);
+
+			urls.add(eventFeedUrl);
+		}
+
+		return urls;
+	}
+
+	public static void setUpIfNewUser() {
+		UserService userService = UserServiceFactory.getUserService();
+		User user = userService.getCurrentUser();
+		if (user != null) {
+			String id = user.getUserId();
+			PersistenceManager pm = PMF.get().getPersistenceManager();
+			Query query = pm.newQuery("SELECT userID FROM " + UserProfile.class.getNam
