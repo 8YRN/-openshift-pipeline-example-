@@ -151,4 +151,14 @@ public class CalendarUtils {
 		if (user != null) {
 			String id = user.getUserId();
 			PersistenceManager pm = PMF.get().getPersistenceManager();
-			Query query = pm.newQuery("SELECT userID FROM " + UserProfile.class.getNam
+			Query query = pm.newQuery("SELECT userID FROM " + UserProfile.class.getName());
+			List<String> userIDs = (List<String>) query.execute();
+			
+			if (!contains(userIDs, id)) {
+				HashMap<SphereName, Double> spherePreferences = new HashMap<SphereName, Double>();
+				for (SphereName s : SphereName.values()) {
+					spherePreferences.put(s, s.defaultValue());
+				}
+				long now = Calendar.getInstance().getTimeInMillis();
+				UserProfile newProfile 
+				    = new UserProfile
