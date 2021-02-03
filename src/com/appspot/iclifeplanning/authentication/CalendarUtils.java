@@ -169,4 +169,18 @@ public class CalendarUtils {
 				AddUserDataServlet.addData(id, 	SphereName.WORK.defaultValue(),
 																				SphereName.HEALTH.defaultValue(),
 																				SphereName.FAMILY.defaultValue(),
-																				80,  // 
+																				80,  // number of weeks
+																				30); // number of weeks optimised
+				Utilities.addProposals();
+			}
+		}
+	}
+
+	private static boolean contains(List<String> userIDs, String id) {
+		for (int i = 0; i < userIDs.size(); i++) {
+			if (userIDs.get(i).equals(id))
+				return true;
+		}
+		return false;
+	}
+}
