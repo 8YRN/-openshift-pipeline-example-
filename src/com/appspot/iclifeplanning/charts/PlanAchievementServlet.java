@@ -15,4 +15,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import com.appspot.datastore.SphereName;
-import com.appspot.datastore.
+import com.appspot.datastore.UserProfile;
+import com.appspot.datastore.UserProfileStore;
+import com.appspot.iclifeplanning.charts.utils.DataToJSONConverter;
+import com.appspot.iclifeplanning.charts.utils.WeeklyDataProfile;
+import com.appspot.iclifeplanning.charts.utils.WeeklyDataProfileStore;
+
+@SuppressWarnings("serial")
+// Used to get data for the pie-chart representing user's life priorities
+public class PlanAchievementServlet exte
