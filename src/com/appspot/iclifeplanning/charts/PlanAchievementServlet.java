@@ -23,4 +23,20 @@ import com.appspot.iclifeplanning.charts.utils.WeeklyDataProfileStore;
 
 @SuppressWarnings("serial")
 // Used to get data for the pie-chart representing user's life priorities
-public class PlanAchievementServlet exte
+public class PlanAchievementServlet extends HttpServlet
+{
+	private final static int ACHIEVED = 0;
+	private final static int PLANNED = 1;
+
+	public void doGet(HttpServletRequest request_, HttpServletResponse response_)
+			throws IOException
+	{
+		String userID = request_.getParameter("userName");
+		UserProfile userProfile = UserProfileStore.getUserProfile(userID);
+		if(userProfile==null)
+		{
+			return;
+		}
+		
+		// Get data for all weeks
+		List<WeeklyDataProfile> listOfAll
