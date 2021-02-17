@@ -39,4 +39,13 @@ public class PlanAchievementServlet extends HttpServlet
 		}
 		
 		// Get data for all weeks
-		List<WeeklyDataProfile> listOfAll
+		List<WeeklyDataProfile> listOfAllWeeks = WeeklyDataProfileStore.getUserWeeklyDataProfiles(userID);
+		if(listOfAllWeeks==null || listOfAllWeeks.size()==0)
+		{
+			response_.getWriter().print("{\"error\": \"nullData\"}");
+			return;
+		}
+		// Extract names of spheres from the first week entry
+		Set<SphereName> sphereNamesSet = listOfAllWeeks.get(0).getSphereResults().keySet();
+		int numberOfSpheres = sphereNamesSet.size();
+		SphereName[] sphereNames = new SphereName[numbe
