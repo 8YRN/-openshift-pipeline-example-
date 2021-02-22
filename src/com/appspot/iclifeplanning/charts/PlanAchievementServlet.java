@@ -48,4 +48,16 @@ public class PlanAchievementServlet extends HttpServlet
 		// Extract names of spheres from the first week entry
 		Set<SphereName> sphereNamesSet = listOfAllWeeks.get(0).getSphereResults().keySet();
 		int numberOfSpheres = sphereNamesSet.size();
-		SphereName[] sphereNames = new SphereName[numbe
+		SphereName[] sphereNames = new SphereName[numberOfSpheres];
+		// Put names of spheres in an array
+		int pos = 0;
+		for(SphereName s : sphereNamesSet)
+		{
+			sphereNames[pos] = s;
+			pos++;
+		}
+
+		// Three-dimensional array holding weekly data for each sphere. Data for sphere with name
+		// in sphereNames[x] is placed in spheresArray[x]
+		// second dimension distinguishes between planned and achieved data
+		Double[][][] spheresArray = new Double[numberOfSpheres][2][listOf
