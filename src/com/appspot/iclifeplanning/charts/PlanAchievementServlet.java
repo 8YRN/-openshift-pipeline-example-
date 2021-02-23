@@ -60,4 +60,12 @@ public class PlanAchievementServlet extends HttpServlet
 		// Three-dimensional array holding weekly data for each sphere. Data for sphere with name
 		// in sphereNames[x] is placed in spheresArray[x]
 		// second dimension distinguishes between planned and achieved data
-		Double[][][] spheresArray = new Double[numberOfSpheres][2][listOf
+		Double[][][] spheresArray = new Double[numberOfSpheres][2][listOfAllWeeks.size()];
+		// Iterate through the list of weekly data and put appropriate numbers in the spheresArray
+		for(WeeklyDataProfile wdp : listOfAllWeeks)
+		{
+			Map<SphereName, Double> sphereResults = wdp.getSphereResults();
+			Map<SphereName, Double> desiredSphereResults = wdp.getDesiredSphereResults();
+			for(int s=0; s<numberOfSpheres; s++)
+			{
+				spheresArray[s][ACHIEVED][wdp.getWeekNumber()] = s
