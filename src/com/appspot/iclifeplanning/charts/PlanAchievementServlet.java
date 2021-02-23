@@ -68,4 +68,15 @@ public class PlanAchievementServlet extends HttpServlet
 			Map<SphereName, Double> desiredSphereResults = wdp.getDesiredSphereResults();
 			for(int s=0; s<numberOfSpheres; s++)
 			{
-				spheresArray[s][ACHIEVED][wdp.getWeekNumber()] = s
+				spheresArray[s][ACHIEVED][wdp.getWeekNumber()] = sphereResults.get(sphereNames[s]);
+				spheresArray[s][PLANNED][wdp.getWeekNumber()] = desiredSphereResults.get(sphereNames[s]);
+			}
+		}
+		
+		// Array of maps holding series that will be sent to JS
+		HashMap<String, Object>[] sphereMaps = new HashMap[numberOfSpheres];
+		
+		for(int sphereNumber = 0; sphereNumber<numberOfSpheres; sphereNumber++)
+		{
+			HashMap<String, Object> plannedMap = new HashMap<String, Object>(2);
+			plann
