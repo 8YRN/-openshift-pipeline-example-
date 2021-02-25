@@ -86,4 +86,14 @@ public class PlanAchievementServlet extends HttpServlet
 			
 			
 			HashMap<String, Object> achievedMap = new HashMap<String, Object>(2);
-			achievedMap.put("name", "Achieved " + sphereNames[sphere
+			achievedMap.put("name", "Achieved " + sphereNames[sphereNumber].toString());
+			achievedMap.put("pointInterval", 7 * 24 * 3600 * 1000); // one week
+			achievedMap.put("pointStart", userProfile.getJoinTime());
+			achievedMap.put("data", spheresArray[sphereNumber][ACHIEVED]);
+			
+			// put the current map in the array of all sphere maps
+			List<Map<String, Object>> currentSphere = new ArrayList<Map<String, Object>>(2);
+			currentSphere.add(plannedMap);
+			currentSphere.add(achievedMap);
+			
+			sphereMa
