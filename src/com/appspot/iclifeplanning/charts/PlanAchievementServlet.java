@@ -96,4 +96,16 @@ public class PlanAchievementServlet extends HttpServlet
 			currentSphere.add(plannedMap);
 			currentSphere.add(achievedMap);
 			
-			sphereMa
+			sphereMaps[sphereNumber] = new HashMap<String, Object>(2);
+			sphereMaps[sphereNumber].put("sphereName", sphereNames[sphereNumber].toString());
+			sphereMaps[sphereNumber].put("series", currentSphere);
+		}
+		
+		// convert the array to a list
+		List<Map<String, Object>> allSpheres = new ArrayList<Map<String, Object>>(numberOfSpheres);
+		for(int s=0; s<numberOfSpheres; s++)
+		{
+			allSpheres.add(sphereMaps[s]);
+		}
+		
+		// map of everything that
