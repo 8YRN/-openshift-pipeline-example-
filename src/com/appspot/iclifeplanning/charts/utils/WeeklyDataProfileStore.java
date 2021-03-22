@@ -83,3 +83,11 @@ public class WeeklyDataProfileStore {
     		  " WHERE userID==\"" + userID + "\"").execute();
     	pm.deletePersistentAll(allProfiles);
     	return allProfiles.size();
+
+    } catch (JDOObjectNotFoundException e) {
+      return -1;
+    } finally {
+      pm.close();
+    }
+  }
+}
