@@ -22,4 +22,16 @@ public class Event extends BaseCalendarSlot implements IEvent {
 	private boolean isRecurring;
 	private Pair<Double, Double> durationInterval;
 
-	public Event(CalendarEventEntr
+	public Event(CalendarEventEntry calendarEventEntry) {
+		super(calendarEventEntry);
+		this.calendarEventEntry = calendarEventEntry;
+		childEvents = null;
+		id = calendarEventEntry.getId();
+		canReschedule = calendarEventEntry.getCanEdit();
+		isRecurring = calendarEventEntry.getRecurrence() != null;
+		parseKeywords(title);
+		durationInterval = new Pair<Double, Double>(minDuration(), maxDuration());
+	}
+
+	public Event(long startTime, long endTime) {
+		
