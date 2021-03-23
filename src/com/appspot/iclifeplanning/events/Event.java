@@ -34,4 +34,22 @@ public class Event extends BaseCalendarSlot implements IEvent {
 	}
 
 	public Event(long startTime, long endTime) {
+		this.startDate = startTime;
+		this.endDate = endTime;
+		durationInterval = new Pair<Double, Double>(minDuration(), maxDuration());
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	private void parseKeywords(String title) {
+		String[] words = title.split("[\\s]+");
+		for(int i = 0; i < words.length; i++) {
+			if (isKeyword(words[i])) {
+				keywords.add(words[i]);
 		
