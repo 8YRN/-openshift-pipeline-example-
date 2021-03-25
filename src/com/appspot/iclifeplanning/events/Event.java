@@ -52,4 +52,28 @@ public class Event extends BaseCalendarSlot implements IEvent {
 		for(int i = 0; i < words.length; i++) {
 			if (isKeyword(words[i])) {
 				keywords.add(words[i]);
-		
+			}
+		}
+	}
+
+	public Set<String> getKeywords() {
+		return keywords;
+	}
+
+	public void setKeywords(Set<String> keywords) {
+		this.keywords = keywords;
+	}
+
+	public Set<Event> getChildEvents() {
+		return childEvents;
+	}
+
+	public void setChildEvents(Set<Event> childEvents) {
+		this.childEvents = childEvents;
+	}
+
+	private boolean isKeyword(String string) {
+		return true;
+	}
+
+	/* Obtain spheres the event influences a
