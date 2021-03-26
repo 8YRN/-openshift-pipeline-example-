@@ -92,4 +92,23 @@ public class Event extends BaseCalendarSlot implements IEvent {
 		return res;
 	}
 
-	public boolean
+	public boolean canReschedule() {
+		return canReschedule;
+	}
+
+	public boolean isRecurring() {
+		return isRecurring;
+	}
+
+	public double getDurationInMinutes() {
+		return (endDate - startDate) / 1000 / 60;
+	}
+
+	public double minDuration() {
+		//double minDuration = (endDate - startDate) / 1000 / 60;
+		return 0;
+	}
+
+	public double maxDuration() {
+		double maxDuration = ((endDate - startDate) / 1000 / 60);
+		return maxDuratio
