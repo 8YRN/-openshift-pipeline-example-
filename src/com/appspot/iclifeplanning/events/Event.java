@@ -111,4 +111,25 @@ public class Event extends BaseCalendarSlot implements IEvent {
 
 	public double maxDuration() {
 		double maxDuration = ((endDate - startDate) / 1000 / 60);
-		return maxDuratio
+		return maxDuration;
+	}
+
+	public void makePersistent(int alternative) {
+		
+	}
+
+	public Pair<Double, Double> getDurationInterval() {
+		return durationInterval;
+	}
+
+	public CalendarEventEntry getCalendarEvent() {
+		return calendarEventEntry;
+	}
+
+	public void setDurationInterval(Pair<Double, Double> newInterval) {
+		durationInterval = newInterval;
+	}
+
+	
+	public int compareTo(Event e) {
+		long result = e.getStartDate().getTi
