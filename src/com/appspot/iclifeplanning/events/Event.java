@@ -132,4 +132,11 @@ public class Event extends BaseCalendarSlot implements IEvent {
 
 	
 	public int compareTo(Event e) {
-		long result = e.getStartDate().getTi
+		long result = e.getStartDate().getTimeInMillis() - startDate;
+		if (result > 0)
+			return 1;
+		if (result == 0)
+			return 0;
+		else return -1;
+	}
+}
