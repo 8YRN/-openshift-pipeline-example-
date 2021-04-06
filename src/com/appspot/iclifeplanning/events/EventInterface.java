@@ -9,4 +9,13 @@ import com.google.gdata.data.TextConstruct;
 
 public interface EventInterface {
 
-	public TextConstruct getDescri
+	public TextConstruct getDescription();
+	public void setDescription(TextConstruct description);
+	public DateTime getStartTime();
+	public void setStartTime(DateTime startTime);
+	public DateTime getEndTime();
+	public void setEndTime(DateTime endTime);
+	public Set<String> getKeywords();
+	public void setKeywords(Set<String> keywords);
+	public boolean canReschedule();
+	public String getCalendarTitle()
