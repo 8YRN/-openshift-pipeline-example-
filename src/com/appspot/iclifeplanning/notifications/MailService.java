@@ -7,4 +7,17 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.mail.*;
-import ja
+import javax.mail.internet.*;
+
+import com.appspot.analyser.Suggestion;
+import com.appspot.datastore.SphereName;
+
+
+public class MailService {
+	public static ArrayList<Thread> users = new ArrayList<Thread>();
+	private static final int time_slice = 10 * 60 * 1000; // 10 minutes
+	
+	public void sendEmail(String email, EmailContent content) {
+		
+		//Here, no Authenticator argument is used (it is null).
+	    //Authent
