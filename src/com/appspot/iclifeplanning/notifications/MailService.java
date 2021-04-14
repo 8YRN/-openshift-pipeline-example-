@@ -28,4 +28,13 @@ public class MailService {
 	    try {
 	      //the "from" address may be set in code, or set in the
 	      //config file under "mail.from" ; here, the latter style is used
-	      //message.setFrom( new InternetAddress(aFromEmailAd
+	      //message.setFrom( new InternetAddress(aFromEmailAddr) );
+	    
+	      message = new MimeMessage(session);
+	      message.addRecipient(Message.RecipientType.TO, new InternetAddress(email, ""));
+	      message.setFrom(new InternetAddress("iclifeplanning@gmail.com", "Life Planning"));
+	      message.setSubject("Updates from your Life Planning Utility!");
+	      message.setText(content.toString());
+	      Transport.send(message);
+	    } catch (MessagingException ex) {
+	      S
