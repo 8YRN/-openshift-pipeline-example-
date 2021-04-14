@@ -20,4 +20,12 @@ public class MailService {
 	public void sendEmail(String email, EmailContent content) {
 		
 		//Here, no Authenticator argument is used (it is null).
-	    //Authent
+	    //Authenticators are used to prompt the user for user
+	    //name and password.
+		Properties props = new Properties();
+	    Session session = Session.getDefaultInstance(props, null);
+	    MimeMessage message;
+	    try {
+	      //the "from" address may be set in code, or set in the
+	      //config file under "mail.from" ; here, the latter style is used
+	      //message.setFrom( new InternetAddress(aFromEmailAd
