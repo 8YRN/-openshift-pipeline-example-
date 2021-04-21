@@ -10,4 +10,14 @@ import com.appspot.datastore.SphereName;
 public class NotificationEmailContent implements EmailContent {
 
 	private boolean isEmpty = true;
-	private List<Lis
+	private List<List<Suggestion>> suggestions;
+    private HashMap<SphereName, Double> desiredLifeBalance;
+    private HashMap<SphereName, Double> currentLifeBalance;
+    private String userName;
+
+    public NotificationEmailContent(List<List<Suggestion>> suggestions, 
+    		HashMap<SphereName, Double> desiredLifeBalance, 
+    		HashMap<SphereName, Double> currentLifeBalance, String userName) {
+    	isEmpty = false;
+    	this.suggestions = suggestions;
+    	this.
