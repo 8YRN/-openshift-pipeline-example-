@@ -37,4 +37,9 @@ public class MailService {
 	      message.setText(content.toString());
 	      Transport.send(message);
 	    } catch (MessagingException ex) {
-	      S
+	      System.err.println("Cannot send email. " + ex);
+	    } catch (UnsupportedEncodingException e) {
+	    	
+	    }
+	}
+}
