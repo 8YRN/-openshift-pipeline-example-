@@ -20,4 +20,16 @@ public class NotificationEmailContent implements EmailContent {
     		HashMap<SphereName, Double> currentLifeBalance, String userName) {
     	isEmpty = false;
     	this.suggestions = suggestions;
-    	this.
+    	this.desiredLifeBalance = desiredLifeBalance;
+    	this.currentLifeBalance = currentLifeBalance;
+    	this.userName = userName;
+    }
+
+    public boolean isEmpty() {
+    	return isEmpty;
+    }
+
+    public String toString() {
+    	String title = "Hi " + userName + "!\n\n";
+    	String openingLine = "This is a regular update from your Life Planning utility.";
+    	String headerCurrent = "Your current lif
