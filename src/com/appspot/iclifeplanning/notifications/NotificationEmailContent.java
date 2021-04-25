@@ -32,4 +32,12 @@ public class NotificationEmailContent implements EmailContent {
     public String toString() {
     	String title = "Hi " + userName + "!\n\n";
     	String openingLine = "This is a regular update from your Life Planning utility.";
-    	String headerCurrent = "Your current lif
+    	String headerCurrent = "Your current life balance is: \n\n";
+    	String currentLifeBalanceDescription = "";
+    	for (Entry<SphereName, Double> sphere : currentLifeBalance.entrySet()) {
+    		currentLifeBalanceDescription += sphere.getKey().toString();
+    		currentLifeBalanceDescription += ": ";
+    		currentLifeBalanceDescription += (int)(sphere.getValue() * 100);
+    		currentLifeBalanceDescription += "%\n";
+    	}
+    	currentLifeBalance
