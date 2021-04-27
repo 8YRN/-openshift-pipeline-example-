@@ -40,4 +40,12 @@ public class NotificationEmailContent implements EmailContent {
     		currentLifeBalanceDescription += (int)(sphere.getValue() * 100);
     		currentLifeBalanceDescription += "%\n";
     	}
-    	currentLifeBalance
+    	currentLifeBalanceDescription += "\n";
+    	
+    	String headerDesired = "Your desired life balance is: \n\n";
+    	String desiredLifeBalanceDescription = "";
+    	for (Entry<SphereName, Double> sphere : desiredLifeBalance.entrySet()) {
+    		desiredLifeBalanceDescription += sphere.getKey().toString();
+    		desiredLifeBalanceDescription += ": ";
+    		desiredLifeBalanceDescription += (int)(sphere.getValue() * 100);
+    		desiredLifeBa
