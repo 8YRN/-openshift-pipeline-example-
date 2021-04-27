@@ -48,4 +48,19 @@ public class NotificationEmailContent implements EmailContent {
     		desiredLifeBalanceDescription += sphere.getKey().toString();
     		desiredLifeBalanceDescription += ": ";
     		desiredLifeBalanceDescription += (int)(sphere.getValue() * 100);
-    		desiredLifeBa
+    		desiredLifeBalanceDescription += "%\n";
+    	}
+    	desiredLifeBalanceDescription += "\n";
+    	
+    	String headerSuggestions = "Here are some of our suggestions how to improve: \n\n";
+    	String suggestionsContent = "";
+    	int i = 0;
+    	while (i < 3) {
+    		if(i < suggestions.get(0).size()) {
+	    		suggestionsContent 
+	    		    += ((i+1) + ". " + suggestions.get(0).get(i).toString() + "\n");
+    		}
+    		i++;
+    	}
+    	
+    	String headerGreetings = "\nHave
