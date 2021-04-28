@@ -63,4 +63,12 @@ public class NotificationEmailContent implements EmailContent {
     		i++;
     	}
     	
-    	String headerGreetings = "\nHave
+    	String headerGreetings = "\nHave an optimized day!\n";
+    	String signature = "Your Life Planning Team\n";
+    	String result = title + openingLine 
+    	    + headerCurrent + currentLifeBalanceDescription 
+    	    + headerDesired + desiredLifeBalanceDescription
+    	    + headerSuggestions + suggestionsContent + headerGreetings + signature;
+    	return result;
+    }
+}
