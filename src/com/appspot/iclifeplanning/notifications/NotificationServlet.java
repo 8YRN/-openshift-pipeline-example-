@@ -36,4 +36,14 @@ import com.appspot.iclifeplanning.events.EventStore;
  */
 @SuppressWarnings("serial")
 public class NotificationServlet extends HttpServlet {
-	private static
+	private static long timer = 0;
+	private static final Logger log = Logger.getLogger("EventStore");
+
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
+		
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		// Does this work?
+	    Query query = pm.newQuery("SELECT FROM " + UserProfile.class.getName());
+	    Collection<UserProfile> profiles = (Collection<UserProfile>) query.execute();
+	    MailService 
