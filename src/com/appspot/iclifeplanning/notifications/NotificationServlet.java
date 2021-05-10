@@ -46,4 +46,15 @@ public class NotificationServlet extends HttpServlet {
 		// Does this work?
 	    Query query = pm.newQuery("SELECT FROM " + UserProfile.class.getName());
 	    Collection<UserProfile> profiles = (Collection<UserProfile>) query.execute();
-	    MailService 
+	    MailService ms = new MailService();
+		
+		for (UserProfile profile : profiles) {
+			String sessionToken = TokenStore.getToken(profile.getUserID());
+			String emailAddress = profile.getEmail();
+			EmailContent content;
+		    if (sessionToken != null) {
+		      AuthService.getAuthServiceInstance().registerToken(sessionToken);
+		      
+		      // Set the session token as a field of the Service object.
+		      CalendarUtils.client.setAuthSubToken(sessionToken);
+		      EventSt
