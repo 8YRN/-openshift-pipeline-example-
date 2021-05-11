@@ -57,4 +57,11 @@ public class NotificationServlet extends HttpServlet {
 		      
 		      // Set the session token as a field of the Service object.
 		      CalendarUtils.client.setAuthSubToken(sessionToken);
-		      EventSt
+		      EventStore eventStore = EventStore.getInstance();
+		      //eventStore.initizalize();
+		      long startTime = profile.getStartOptimizing();
+		      long endTime = profile.getFinishOptimizing();
+		      List<Event> events = eventStore.getEventsFromTimeRange(startTime, endTime);
+		      Analyser analyser = new Analyser();
+		      List<List<Suggestion>> suggestions
+		    	  = analyser.getSuggestions(even
