@@ -64,4 +64,12 @@ public class NotificationServlet extends HttpServlet {
 		      List<Event> events = eventStore.getEventsFromTimeRange(startTime, endTime);
 		      Analyser analyser = new Analyser();
 		      List<List<Suggestion>> suggestions
-		    	  = analyser.getSuggestions(even
+		    	  = analyser.getSuggestions(events, profile.getUserID());
+		      HashMap<SphereName, Double> desiredLifeBalance 
+		          = profile.getSpherePreferences();
+		      HashMap<SphereName, Double> currentLifeBalance 
+		          = Utilities.analyseEvents(events, desiredLifeBalance);
+		      content = new NotificationEmailContent(suggestions, 
+		    		  desiredLifeBalance, currentLifeBalance, profile.getName());
+		    } else {
+		    	content = new ErrorEmailContent(ErrorEmailCon
