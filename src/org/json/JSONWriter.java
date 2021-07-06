@@ -50,4 +50,22 @@ SOFTWARE.
  * <p>
  * The first method called must be <code>array</code> or <code>object</code>.
  * There are no methods for adding commas or colons. JSONWriter adds them for
- * you. Objects and arrays can be nested up to 20 levels deep
+ * you. Objects and arrays can be nested up to 20 levels deep.
+ * <p>
+ * This can sometimes be easier than using a JSONObject to build a string.
+ * @author JSON.org
+ * @version 2010-03-11
+ */
+public class JSONWriter {
+    private static final int maxdepth = 20;
+
+    /**
+     * The comma flag determines if a comma should be output before the next
+     * value.
+     */
+    private boolean comma;
+
+    /**
+     * The current mode. Values:
+     * 'a' (array),
+     * 'd' (done),
