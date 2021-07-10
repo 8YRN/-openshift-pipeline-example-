@@ -105,4 +105,15 @@ public class JSONWriter {
      * Append a value.
      * @param s A string value.
      * @return this
-     * @throws JSONException If the 
+     * @throws JSONException If the value is out of sequence.
+     */
+    private JSONWriter append(String s) throws JSONException {
+        if (s == null) {
+            throw new JSONException("Null pointer");
+        }
+        if (this.mode == 'o' || this.mode == 'a') {
+            try {
+                if (this.comma && this.mode == 'a') {
+                    this.writer.write(',');
+                }
+                this.writer.
