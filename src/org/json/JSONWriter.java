@@ -69,3 +69,25 @@ public class JSONWriter {
      * The current mode. Values:
      * 'a' (array),
      * 'd' (done),
+     * 'i' (initial),
+     * 'k' (key),
+     * 'o' (object).
+     */
+    protected char mode;
+
+    /**
+     * The object/array stack.
+     */
+    private JSONObject stack[];
+
+    /**
+     * The stack top index. A value of 0 indicates that the stack is empty.
+     */
+    private int top;
+
+    /**
+     * The writer that will receive the output.
+     */
+    protected Writer writer;
+
+ 
