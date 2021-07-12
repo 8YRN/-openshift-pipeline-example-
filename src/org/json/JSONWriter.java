@@ -116,4 +116,18 @@ public class JSONWriter {
                 if (this.comma && this.mode == 'a') {
                     this.writer.write(',');
                 }
-                this.writer.
+                this.writer.write(s);
+            } catch (IOException e) {
+                throw new JSONException(e);
+            }
+            if (this.mode == 'o') {
+                this.mode = 'k';
+            }
+            this.comma = true;
+            return this;
+        }
+        throw new JSONException("Value out of sequence.");
+    }
+
+    /**
+     * Begin appending a new array. All values until the
