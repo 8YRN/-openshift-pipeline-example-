@@ -168,4 +168,20 @@ public class JSONWriter {
         }
         this.comma = true;
         return this;
+    }
+
+    /**
+     * End an array. This method most be called to balance calls to
+     * <code>array</code>.
+     * @return this
+     * @throws JSONException If incorrectly nested.
+     */
+    public JSONWriter endArray() throws JSONException {
+        return this.end('a', ']');
+    }
+
+    /**
+     * End an object. This method most be called to balance calls to
+     * <code>object</code>.
+     * @return this
     
