@@ -138,4 +138,21 @@ public class JSONWriter {
      * started in the wrong place (for example as a key or after the end of the
      * outermost array or object).
      */
-    public JSONWriter ar
+    public JSONWriter array() throws JSONException {
+        if (this.mode == 'i' || this.mode == 'o' || this.mode == 'a') {
+            this.push(null);
+            this.append("[");
+            this.comma = false;
+            return this;
+        }
+        throw new JSONException("Misplaced array.");
+    }
+
+    /**
+     * End something.
+     * @param m Mode
+     * @param c Closing character
+     * @return this
+     * @throws JSONException If unbalanced.
+     */
+    private 
