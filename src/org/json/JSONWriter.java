@@ -208,4 +208,18 @@ public class JSONWriter {
                 if (this.comma) {
                     this.writer.write(',');
                 }
-                this.writer.wr
+                this.writer.write(JSONObject.quote(s));
+                this.writer.write(':');
+                this.comma = false;
+                this.mode = 'o';
+                return this;
+            } catch (IOException e) {
+                throw new JSONException(e);
+            }
+        }
+        throw new JSONException("Misplaced key.");
+    }
+
+
+    /**
+     * Begin appending a new object. All keys and values until the balanci
