@@ -196,4 +196,16 @@ public class JSONWriter {
      * @param s A key string.
      * @return this
      * @throws JSONException If the key is out of place. For example, keys
-     *  do not b
+     *  do not belong in arrays or if the key is null.
+     */
+    public JSONWriter key(String s) throws JSONException {
+        if (s == null) {
+            throw new JSONException("Null key.");
+        }
+        if (this.mode == 'k') {
+            try {
+                stack[top - 1].putOnce(s, Boolean.TRUE);
+                if (this.comma) {
+                    this.writer.write(',');
+                }
+                this.writer.wr
