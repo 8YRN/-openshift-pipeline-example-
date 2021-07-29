@@ -230,4 +230,22 @@ public class JSONWriter {
      * started in the wrong place (for example as a key or after the end of the
      * outermost array or object).
      */
-    public JSONWriter object() th
+    public JSONWriter object() throws JSONException {
+        if (this.mode == 'i') {
+            this.mode = 'o';
+        }
+        if (this.mode == 'o' || this.mode == 'a') {
+            this.append("{");
+            this.push(new JSONObject());
+            this.comma = false;
+            return this;
+        }
+        throw new JSONException("Misplaced object.");
+
+    }
+
+
+    /**
+     * Pop an array or object scope.
+     * @param c The scope to close.
+  
