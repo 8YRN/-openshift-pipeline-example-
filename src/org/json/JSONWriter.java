@@ -292,4 +292,22 @@ public class JSONWriter {
      * Append a double value.
      * @param d A double.
      * @return this
-     * @throws JSONExc
+     * @throws JSONException If the number is not finite.
+     */
+    public JSONWriter value(double d) throws JSONException {
+        return this.value(new Double(d));
+    }
+
+    /**
+     * Append a long value.
+     * @param l A long.
+     * @return this
+     * @throws JSONException
+     */
+    public JSONWriter value(long l) throws JSONException {
+        return this.append(Long.toString(l));
+    }
+
+
+    /**
+     
