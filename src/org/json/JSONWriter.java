@@ -273,4 +273,23 @@ public class JSONWriter {
         }
         this.stack[this.top] = jo;
         this.mode = jo == null ? 'a' : 'k';
-        this
+        this.top += 1;
+    }
+
+
+    /**
+     * Append either the value <code>true</code> or the value
+     * <code>false</code>.
+     * @param b A boolean.
+     * @return this
+     * @throws JSONException
+     */
+    public JSONWriter value(boolean b) throws JSONException {
+        return this.append(b ? "true" : "false");
+    }
+
+    /**
+     * Append a double value.
+     * @param d A double.
+     * @return this
+     * @throws JSONExc
