@@ -310,4 +310,14 @@ public class JSONWriter {
 
 
     /**
-     
+     * Append an object value.
+     * @param o The object to append. It can be null, or a Boolean, Number,
+     *   String, JSONObject, or JSONArray, or an object with a toJSONString()
+     *   method.
+     * @return this
+     * @throws JSONException If the value is out of sequence.
+     */
+    public JSONWriter value(Object o) throws JSONException {
+        return this.append(JSONObject.valueToString(o));
+    }
+}
