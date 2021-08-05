@@ -418,3 +418,262 @@ public class Test {
             }
 
             System.out.println("");
+            j = new JSONObject(j, new String[]{"dec", "oct", "hex", "missing"});
+            System.out.println(j.toString(4));
+
+            System.out.println("");
+            System.out.println(new JSONStringer().array().value(a).value(j).endArray());
+
+            j = new JSONObject("{string: \"98.6\", long: 2147483648, int: 2147483647, longer: 9223372036854775807, double: 9223372036854775808}");
+            System.out.println(j.toString(4));
+
+            System.out.println("\ngetInt");
+            System.out.println("int    " + j.getInt("int"));
+            System.out.println("long   " + j.getInt("long"));
+            System.out.println("longer " + j.getInt("longer"));
+            //System.out.println("double " + j.getInt("double"));
+            //System.out.println("string " + j.getInt("string"));
+
+            System.out.println("\ngetLong");
+            System.out.println("int    " + j.getLong("int"));
+            System.out.println("long   " + j.getLong("long"));
+            System.out.println("longer " + j.getLong("longer"));
+            //System.out.println("double " + j.getLong("double"));
+            //System.out.println("string " + j.getLong("string"));
+
+            System.out.println("\ngetDouble");
+            System.out.println("int    " + j.getDouble("int"));
+            System.out.println("long   " + j.getDouble("long"));
+            System.out.println("longer " + j.getDouble("longer"));
+            System.out.println("double " + j.getDouble("double"));
+            System.out.println("string " + j.getDouble("string"));
+
+            j.put("good sized", 9223372036854775807L);
+            System.out.println(j.toString(4));
+
+            a = new JSONArray("[2147483647, 2147483648, 9223372036854775807, 9223372036854775808]");
+            System.out.println(a.toString(4));
+
+            System.out.println("\nKeys: ");
+            it = j.keys();
+            while (it.hasNext()) {
+                s = (String)it.next();
+                System.out.println(s + ": " + j.getString(s));
+            }
+
+
+            System.out.println("\naccumulate: ");
+            j = new JSONObject();
+            j.accumulate("stooge", "Curly");
+            j.accumulate("stooge", "Larry");
+            j.accumulate("stooge", "Moe");
+            a = j.getJSONArray("stooge");
+            a.put(5, "Shemp");
+            System.out.println(j.toString(4));
+
+            System.out.println("\nwrite:");
+            System.out.println(j.write(new StringWriter()));
+
+            s = "<xml empty><a></a><a>1</a><a>22</a><a>333</a></xml>";
+            j = XML.toJSONObject(s);
+            System.out.println(j.toString(4));
+            System.out.println(XML.toString(j));
+            
+            s = "<book><chapter>Content of the first chapter</chapter><chapter>Content of the second chapter      <chapter>Content of the first subchapter</chapter>      <chapter>Content of the second subchapter</chapter></chapter><chapter>Third Chapter</chapter></book>";
+            j = XML.toJSONObject(s);
+            System.out.println(j.toString(4));
+            System.out.println(XML.toString(j));
+            
+            a = JSONML.toJSONArray(s);
+            System.out.println(a.toString(4));
+            System.out.println(JSONML.toString(a));
+            
+            Collection c = null;
+            Map m = null;
+            
+            j = new JSONObject(m);
+            a = new JSONArray(c);
+            j.append("stooge", "Joe DeRita");
+            j.append("stooge", "Shemp");
+            j.accumulate("stooges", "Curly");
+            j.accumulate("stooges", "Larry");
+            j.accumulate("stooges", "Moe");
+            j.accumulate("stoogearray", j.get("stooges"));
+            j.put("map", m);
+            j.put("collection", c);
+            j.put("array", a);
+            a.put(m);
+            a.put(c);
+            System.out.println(j.toString(4));
+            
+            s = "{plist=Apple; AnimalSmells = { pig = piggish; lamb = lambish; worm = wormy; }; AnimalSounds = { pig = oink; lamb = baa; worm = baa;  Lisa = \"Why is the worm talking like a lamb?\" } ; AnimalColors = { pig = pink; lamb = black; worm = pink; } } "; 
+            j = new JSONObject(s);
+            System.out.println(j.toString(4));
+            
+            s = " (\"San Francisco\", \"New York\", \"Seoul\", \"London\", \"Seattle\", \"Shanghai\")";
+            a = new JSONArray(s);
+            System.out.println(a.toString());
+            
+            s = "<a ichi='1' ni='2'><b>The content of b</b> and <c san='3'>The content of c</c><d>do</d><e></e><d>re</d><f/><d>mi</d></a>";
+            j = XML.toJSONObject(s);
+
+            System.out.println(j.toString(2));
+            System.out.println(XML.toString(j));
+            System.out.println("");
+            ja = JSONML.toJSONArray(s);
+            System.out.println(ja.toString(4));
+            System.out.println(JSONML.toString(ja));
+            System.out.println("");
+            
+            s = "<Root><MsgType type=\"node\"><BatchType type=\"string\">111111111111111</BatchType></MsgType></Root>";
+            j = JSONML.toJSONObject(s);
+            System.out.println(j);
+            ja = JSONML.toJSONArray(s);
+            System.out.println(ja);
+          
+            
+            System.out.println("\nTesting Exceptions: ");
+
+            System.out.print("Exception: ");
+            try {
+                a = new JSONArray("[\n\r\n\r}");
+                System.out.println(a.toString());
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            
+            System.out.print("Exception: ");
+            try {
+                a = new JSONArray("<\n\r\n\r      ");
+                System.out.println(a.toString());
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            
+            System.out.print("Exception: ");
+            try {
+                a = new JSONArray();
+                a.put(Double.NEGATIVE_INFINITY);
+                a.put(Double.NaN);
+                System.out.println(a.toString());
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            System.out.print("Exception: ");
+            try {
+                System.out.println(j.getDouble("stooge"));
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            System.out.print("Exception: ");
+            try {
+                System.out.println(j.getDouble("howard"));
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            System.out.print("Exception: ");
+            try {
+                System.out.println(j.put(null, "howard"));
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            System.out.print("Exception: ");
+            try {
+                System.out.println(a.getDouble(0));
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            System.out.print("Exception: ");
+            try {
+                System.out.println(a.get(-1));
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            System.out.print("Exception: ");
+            try {
+                System.out.println(a.put(Double.NaN));
+            } catch (Exception e) {
+                System.out.println(e);
+            }
+            System.out.print("Exception: ");
+            try {
+            	j = XML.toJSONObject("<a><b>    ");
+            } catch (Exception e) {
+            	System.out.println(e);
+            }            
+            System.out.print("Exception: ");
+            try {
+            	j = XML.toJSONObject("<a></b>    ");
+            } catch (Exception e) {
+            	System.out.println(e);
+            }            
+            System.out.print("Exception: ");
+            try {
+            	j = XML.toJSONObject("<a></a    ");
+            } catch (Exception e) {
+            	System.out.println(e);
+            }
+            System.out.print("Exception: ");
+            try {            	
+            	ja = new JSONArray(new Object());
+            	System.out.println(ja.toString());
+            } catch (Exception e) {
+            	System.out.println(e);
+            }
+
+            System.out.print("Exception: ");
+            try {            	
+            	s = "[)";
+            	a = new JSONArray(s);
+            	System.out.println(a.toString());
+            } catch (Exception e) {
+            	System.out.println(e);
+            }
+
+            System.out.print("Exception: ");
+            try {            	
+                s = "<xml";
+                ja = JSONML.toJSONArray(s);
+                System.out.println(ja.toString(4));
+            } catch (Exception e) {
+            	System.out.println(e);
+            }
+
+            System.out.print("Exception: ");
+            try {            	
+                s = "<right></wrong>";
+                ja = JSONML.toJSONArray(s);
+                System.out.println(ja.toString(4));
+            } catch (Exception e) {
+            	System.out.println(e);
+            }
+
+            System.out.print("Exception: ");
+            try {            	
+                s = "{\"koda\": true, \"koda\": true}";
+                j = new JSONObject(s);
+                System.out.println(j.toString(4));
+            } catch (Exception e) {
+            	System.out.println(e);
+            }
+
+            System.out.print("Exception: ");
+            try {            	
+                jj = new JSONStringer();
+                s = jj
+    	            .object()
+    	                .key("bosanda")
+    	                .value("MARIE HAA'S")
+    	                .key("bosanda")
+    	                .value("MARIE HAA\\'S")
+    	            .endObject()
+    	            .toString();
+                System.out.println(j.toString(4));
+            } catch (Exception e) {
+            	System.out.println(e);
+            }
+        } catch (Exception e) {
+            System.out.println(e.toString());
+        }
+    }
+}
