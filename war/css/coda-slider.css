@@ -12,4 +12,22 @@
 .scroll {
     height: 350px;
     width: 960px;
-    overflow: aut
+    overflow: auto;
+    overflow-x: hidden;
+    position: relative;
+    clear: left;
+}
+
+.scrollContainer div.panel {
+    padding: 0;
+    height: 350px;
+    width: 960px;
+}
+
+ul.navigation {
+    display: none;
+}
+
+.hide {
+    display: none;
+}
