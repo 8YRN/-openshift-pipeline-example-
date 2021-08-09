@@ -153,3 +153,104 @@ div#body {
 
 div#signup-bar {
 	height: 130px;
+	position: relative;
+	top: 0;
+}
+
+	div#signup-text {
+		width: 480px;
+		height: 110px;
+		margin-top: -55px; /*Has to be half of height*/
+		overflow: hidden;
+		position: absolute;
+		top: 50%;
+
+		font-family: Times;
+		font-style: italic;
+		text-align: justify;
+		font-size: 18px;
+		color: #247da2;
+	}
+
+	div#signup {
+		width: 350px;
+		height: 60px;
+		margin-top: -30px; /*Has to be half of height*/
+		position: absolute;
+		top: 50%;
+		right: 0px;
+
+		text-align: center;
+		background: #247da2;
+		vertical-align: middle;
+	}
+	
+	div#signup a, div#signup a:visited {
+		font-family: Futura;
+		font-size: 14px;
+		text-transform: uppercase;
+		text-decoration: none;
+		line-height: 60px;
+		color: #fff;
+	}
+	
+	div#signup a:hover, div#signup a:active {
+		color: #000;
+	}
+	
+.panel {
+	position: relative;
+}
+
+.panel img {
+	display: block;
+	width: 400px;
+}
+
+.panel a {
+	color: black;
+}
+
+.tour-step {
+	font-family: Futura;
+	font-size: 20px;
+	position: absolute;
+	left: 410px;
+}
+
+.tour-next {
+	font-family: Futura;
+	font-size: 14px;
+	position: absolute;
+	left: 450px;
+	top: 25px;
+}
+
+.tour-prev {
+	font-family: Futura;
+	font-size: 14px;
+	position: absolute;
+	left: 410px;
+	top: 25px;
+}
+
+#help li {
+	list-style-type: none;
+}
+
+#help .question {
+	font-family: Futura;
+	font-size: 14px;
+	text-transform: uppercase;
+	display:block;
+	margin-bottom: 3px;
+}
+
+#help .answer {
+	font-family: Futura;
+	font-size: 12px;
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	display: block;
+	border-bottom: 1px solid black;
+}
