@@ -1,0 +1,27 @@
+div#calendar_suggestions {
+	width: 100%;
+}
+
+/* Loading gif */
+div#calendar_suggestions > img {
+	margin: 0 459px;
+}
+/* ------------------ */
+div#calendar_suggestions div.id {
+	display: none;
+}
+
+div#calendar_suggestions div.sugg_set {
+	font-family: Futura;
+	di splay: inline;
+	fl oat: right;
+}
+
+	#sugg_nav {
+		margin: 0 auto 20px auto;
+		wi dth: 195px;
+		text-align: center;
+	}
+	
+	#sugg_nav a {
+		display: i
