@@ -24,4 +24,26 @@ div#calendar_suggestions div.sugg_set {
 	}
 	
 	#sugg_nav a {
-		display: i
+		display: inline-block;
+		font-family: Futura;
+		font-size      : 20px;
+		text-align     : center;
+		text-decoration: none;
+		text-transform: uppercase;
+		line-height    : 35px;
+		height         : 35px;
+		margin: 0 2px 0 2px;
+		padding: 0 5px 0 5px;
+		background: #247da2;
+		color: #fff;
+	}
+	
+	#sugg_nav a.selected {
+		background: #247da2;
+	}
+	
+	#sugg_nav a.unselected {
+		background: #333;
+	}
+	
+	div#calendar_suggestions div.alt
