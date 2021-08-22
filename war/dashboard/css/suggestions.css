@@ -46,4 +46,22 @@ div#calendar_suggestions div.sugg_set {
 		background: #333;
 	}
 	
-	div#calendar_suggestions div.alt
+	div#calendar_suggestions div.alter_set {
+		width: 960px;
+		margin-bottom: 10px;
+		border: 0px solid #222;
+		clear: both;
+		float: left;
+		position: relative;
+	}
+		
+		div#calendar_suggestions div.selected, div#calendar_suggestions div.unselected {
+			float: left;
+			margin-left: 5px;
+		}
+		
+		div#calendar_suggestions div.selected div.remove div.alter_back_strip {
+			background-color: #cc0000;
+		}
+		
+		div#calendar_suggestions div.unselected 
