@@ -77,4 +77,19 @@ div#calendar_suggestions div.sugg_set {
 		}
 		
 		div#calendar_suggestions div.selected div.reschedule div.alter_back_strip {
-			background-colo
+			background-color: #0000cc;
+		}
+		
+		div#calendar_suggestions div.unselected div.reschedule div.alter_back_strip {
+			background-color: #000044;
+		}
+		
+			div#calendar_suggestions .remove, div#calendar_suggestions .newevent, div#calendar_suggestions .reschedule {
+				float: left;
+				margin-left: 0px;
+			}
+	
+				div#calendar_suggestions div.alter_back {
+					position: absolute;
+					top: 0;
+					bottom: 0;
