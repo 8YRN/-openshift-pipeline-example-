@@ -93,3 +93,24 @@ div#calendar_suggestions div.sugg_set {
 					position: absolute;
 					top: 0;
 					bottom: 0;
+					z-index: 0;
+					margin-left:20px;
+				}
+				
+				div#calendar_suggestions div.alter_back_strip {
+					position: absolute;
+					top: 0;
+					bottom: 0;
+					z-index: 0;
+					width: 20px;
+				}
+				
+				div#calendar_suggestions div.selected div.alter_back {
+					background-color: #333;
+				}
+				
+				div#calendar_suggestions div.unselected div.alter_back {
+					background-color: #1c1c1c;
+				}
+	
+				div#calendar_sug
