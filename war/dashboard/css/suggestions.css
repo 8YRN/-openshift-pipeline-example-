@@ -132,4 +132,24 @@ div#calendar_suggestions div.sugg_set {
 						}
 				
 						div#calendar_suggestions div.datetimes {
-							font-size: 1
+							font-size: 13px;
+						}
+				
+						div#calendar_suggestions div.selected div.datetimes {
+							color: #999;
+						}
+				
+						div#calendar_suggestions div.description {
+							margin-top: 10px;
+						}
+			
+					div#calendar_suggestions div.right {
+						height: 60px;
+					}
+			
+						div#calendar_suggestions ul.spheres {
+							margin-top: 10px;
+							list-style-type: none;
+							font-size: 12px;
+							position: absolute;
+				
