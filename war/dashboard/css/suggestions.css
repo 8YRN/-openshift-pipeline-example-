@@ -113,4 +113,23 @@ div#calendar_suggestions div.sugg_set {
 					background-color: #1c1c1c;
 				}
 	
-				div#calendar_sug
+				div#calendar_suggestions div.alter {
+					position: relative;
+					z-index: 1;
+					margin: 5px 5px 5px 25px;
+				}
+				
+				div#calendar_suggestions div.unselected div.alter {
+					color: #333;
+				}
+		
+					div#calendar_suggestions div.left {
+					}
+			
+						div#calendar_suggestions div.title {
+							font-size: 20px;
+							text-transform: uppercase;
+						}
+				
+						div#calendar_suggestions div.datetimes {
+							font-size: 1
