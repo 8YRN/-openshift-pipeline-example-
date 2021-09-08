@@ -152,4 +152,21 @@ div#calendar_suggestions div.sugg_set {
 							list-style-type: none;
 							font-size: 12px;
 							position: absolute;
-				
+							bottom: 0;
+							margin-left: 25px;
+						}
+
+						div#calendar_suggestions ul.spheres > li {
+							display: inline;
+							float: left;
+							margin-right: 10px;
+							margin-bottom: 5px;
+						}
+
+						div#calendar_suggestions ul.spheres > li {
+							width: 48px;
+							height: 48px;
+						}
+
+						div#calendar_suggestions ul.spheres > li span {
+							display: n
