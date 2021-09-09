@@ -196,4 +196,22 @@ div#calendar_suggestions div.sugg_set {
 							background-image: url("family-icon-grey.png");
 						}
 
-						div#calendar_suggestions div.unsel
+						div#calendar_suggestions div.unselected ul.spheres > li.work  {
+							background-image: url("work-icon-grey.png");
+						}
+
+						div#calendar_suggestions div.unselected ul.spheres > li.recreation  {
+							background-image: url("recreation-icon-grey.png");
+						}
+
+/* BUTTON */
+
+div#calendar_suggestions button {
+	font-family: Futura;
+	font-size: 14px;
+	height: 40px;
+	width: 100%;
+	text-transform: uppercase;
+	background: #247da2;
+	color: white;
+	border: 0;
