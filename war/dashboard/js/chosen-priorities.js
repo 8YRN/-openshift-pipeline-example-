@@ -51,3 +51,16 @@ $.getJSON("chosen-priorities", parametersForServlet, function(data){
 		legend: {
 			layout: 'vertical',
 			style: {
+				left: 'auto',
+				bottom: 'auto',
+				right: '50px',
+				top: '100px'
+			}
+		},
+		series: [{
+			type: 'pie',
+			name: 'Spheres',
+			data: data 
+		}]
+	});
+});	
