@@ -215,3 +215,11 @@ div#calendar_suggestions button {
 	background: #247da2;
 	color: white;
 	border: 0;
+	margin-top: 10px;
+	cursor: pointer;
+}
+
+div#calendar_suggestions button:hover {
+	border-top: 1px solid #333;
+	border-left: 1px solid #333;
+}
