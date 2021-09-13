@@ -6,4 +6,15 @@
 * @param int dowOffset
 * @return int
 */
-functi
+function getWeek(dateLong, dowOffset) {
+
+	date = new Date(dateLong);
+	/*
+	 * getWeek() was developed by Nick Baicoianu at MeanFreePath: http://www.meanfreepath.com
+	 * modified by Kamil
+	 */
+
+	dowOffset = typeof(dowOffset) == 'int' ? dowOffset : 0; //default dowOffset to zero
+	var newYear = new Date(date.getFullYear(),0,1);
+	var day = newYear.getDay() - dowOffset; //the day of week the year begins on
+	day = (day >= 
