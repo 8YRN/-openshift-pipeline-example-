@@ -391,3 +391,113 @@ Date.fullYearStart = '20';
 		this.setMilliseconds(0);
 		this.setSeconds(0);
 		this.setMinutes(0);
+		this.setHours(0);
+		return this;
+	});
+	
+	/**
+	 * Returns a string representation of the date object according to Date.format.
+	 * (Date.toString may be used in other places so I purposefully didn't overwrite it)
+	 * 
+	 * @example var dtm = new Date("01/12/2008");
+	 * dtm.asString();
+	 * @result '12/01/2008' // (where Date.format == 'dd/mm/yyyy'
+	 * 
+	 * @name asString
+	 * @type Date
+	 * @cat Plugins/Methods/Date
+	 * @author Kelvin Luck
+	 */
+	add("asString", function(format) {
+		var r = format || Date.format;
+		return r
+			.split('yyyy').join(this.getFullYear())
+			.split('yy').join((this.getFullYear() + '').substring(2))
+			.split('mmmm').join(this.getMonthName(false))
+			.split('mmm').join(this.getMonthName(true))
+			.split('mm').join(_zeroPad(this.getMonth()+1))
+			.split('dd').join(_zeroPad(this.getDate()))
+			.split('hh').join(_zeroPad(this.getHours()))
+			.split('min').join(_zeroPad(this.getMinutes()))
+			.split('ss').join(_zeroPad(this.getSeconds()));
+	});
+	
+	/**
+	 * Returns a new date object created from the passed String according to Date.format or false if the attempt to do this results in an invalid date object
+	 * (We can't simple use Date.parse as it's not aware of locale and I chose not to overwrite it incase it's functionality is being relied on elsewhere)
+	 *
+	 * @example var dtm = Date.fromString("12/01/2008");
+	 * dtm.toString();
+	 * @result 'Sat Jan 12 2008 00:00:00' // (where Date.format == 'dd/mm/yyyy'
+	 * 
+	 * @name fromString
+	 * @type Date
+	 * @cat Plugins/Methods/Date
+	 * @author Kelvin Luck
+	 */
+	Date.fromString = function(s, format)
+	{
+		var f = format || Date.format;
+		var d = new Date('01/01/1977');
+		
+		var mLength = 0;
+
+		var iM = f.indexOf('mmmm');
+		if (iM > -1) {
+			for (var i=0; i<Date.monthNames.length; i++) {
+				var mStr = s.substr(iM, Date.monthNames[i].length);
+				if (Date.monthNames[i] == mStr) {
+					mLength = Date.monthNames[i].length - 4;
+					break;
+				}
+			}
+			d.setMonth(i);
+		} else {
+			iM = f.indexOf('mmm');
+			if (iM > -1) {
+				var mStr = s.substr(iM, 3);
+				for (var i=0; i<Date.abbrMonthNames.length; i++) {
+					if (Date.abbrMonthNames[i] == mStr) break;
+				}
+				d.setMonth(i);
+			} else {
+				d.setMonth(Number(s.substr(f.indexOf('mm'), 2)) - 1);
+			}
+		}
+		
+		var iY = f.indexOf('yyyy');
+
+		if (iY > -1) {
+			if (iM < iY)
+			{
+				iY += mLength;
+			}
+			d.setFullYear(Number(s.substr(iY, 4)));
+		} else {
+			if (iM < iY)
+			{
+				iY += mLength;
+			}
+			// TODO - this doesn't work very well - are there any rules for what is meant by a two digit year?
+			d.setFullYear(Number(Date.fullYearStart + s.substr(f.indexOf('yy'), 2)));
+		}
+		var iD = f.indexOf('dd');
+		if (iM < iD)
+		{
+			iD += mLength;
+		}
+		d.setDate(Number(s.substr(iD, 2)));
+		if (isNaN(d.getTime())) {
+			return false;
+		}
+		return d;
+	};
+	
+	// utility method
+	var _zeroPad = function(num) {
+		var s = '0'+num;
+		return s.substring(s.length-2)
+		//return ('0'+num).substring(-2); // doesn't work on IE :(
+	};
+	
+})();
