@@ -17,4 +17,15 @@ function getWeek(dateLong, dowOffset) {
 	dowOffset = typeof(dowOffset) == 'int' ? dowOffset : 0; //default dowOffset to zero
 	var newYear = new Date(date.getFullYear(),0,1);
 	var day = newYear.getDay() - dowOffset; //the day of week the year begins on
-	day = (day >= 
+	day = (day >= 0 ? day : day + 7);
+	var daynum = Math.floor((date.getTime() - newYear.getTime() -
+	(date.getTimezoneOffset()-newYear.getTimezoneOffset())*60000)/86400000) + 1;
+	var weeknum;
+	//if the year starts before the middle of a week
+	if(day < 4) {
+		weeknum = Math.floor((daynum+day-1)/7) + 1;
+		if(weeknum > 52) {
+			nYear = new Date(date.getFullYear() + 1,0,1);
+			nday = nYear.getDay() - dowOffset;
+			nday = nday >= 0 ? nday : nday + 7;
+			/*
