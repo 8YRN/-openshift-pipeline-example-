@@ -28,4 +28,12 @@ function getWeek(dateLong, dowOffset) {
 			nYear = new Date(date.getFullYear() + 1,0,1);
 			nday = nYear.getDay() - dowOffset;
 			nday = nday >= 0 ? nday : nday + 7;
-			/*
+			/*if the next year starts before the middle of the week, it is week #1 of that year*/
+			weeknum = nday < 4 ? 1 : 53;
+		}
+	}
+	else {
+		weeknum = Math.floor((daynum+day-1)/7);
+	}
+	return weeknum;
+}
