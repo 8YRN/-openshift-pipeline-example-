@@ -66,4 +66,21 @@ $.extend({ drawer: {
 					success : function (html) {
 						if (!loaded) {
 							content.prepend('<div id="drw_ajax"></div>');
-							$('#drw_ajax'
+							$('#drw_ajax').hide().append(html);
+							$('#drw_loader').animate({ height: $('#drw_ajax').height() }, function () {
+								$('#drw_loader').fadeOut(function () { $('#drw_ajax').fadeIn(); });
+							});
+						}
+					}
+				});
+			}
+		});
+	},
+	
+	
+	
+	close: function (el) {
+		loaded    = true;
+		this.self = el;
+		var content = $('#drw_content');
+		content.animate({ marginTop: content.height() * -1 }, function () { $.drawer.open()
