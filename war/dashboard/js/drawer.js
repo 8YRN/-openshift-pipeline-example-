@@ -52,3 +52,18 @@ $.extend({ drawer: {
 		content.append(loaded ? $(RegExp.$1).clone().show() : this.loader);
 		content.append(this.closer);
 		content.find('.drw_close').click(function () {
+			$.drawer.close(null);
+			this.blur();
+			return false;
+		});
+		content.css({ marginTop: content.height() * -1 }).animate({ marginTop: 0 }, function () {
+			if (!loaded) {
+				$.ajax({
+					url     : $.drawer.self.href,
+					type    : 'GET',
+					dataType: 'html',
+					cache   : false,
+					success : function (html) {
+						if (!loaded) {
+							content.prepend('<div id="drw_ajax"></div>');
+							$('#drw_ajax'
