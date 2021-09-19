@@ -27,4 +27,27 @@ Highcharts.setOptions({
    subtitle: {
 	  style: {
 		 color: '#DDD',
-		 font: '12px Lucida Grande, Lucida Sans 
+		 font: '12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+	  }
+   },
+   xAxis: {
+	  gridLineWidth: 0,
+	  lineColor: '#999',
+	  tickColor: '#999',
+	  labels: {
+		 style: {
+			color: '#999',
+			fontWeight: 'bold'
+		 }
+	  },
+	  title: {
+		 style: {
+			color: '#AAA',
+			font: 'bold 12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+		 }            
+	  }
+   },
+   yAxis: {
+	  alternateGridColor: null,
+	  minorTickInterval: null,
+	  gridLineColor: 'rgba(255,
