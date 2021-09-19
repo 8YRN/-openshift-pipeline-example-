@@ -77,4 +77,36 @@ Highcharts.setOptions({
 		 color: '#333'
 	  }
    },
-   credi
+   credits: {
+	  style: {
+		 right: '50px'
+	  }
+   },
+   labels: {
+	  style: {
+		 color: '#CCC'
+	  }
+   },
+   tooltip: {
+	  backgroundColor: {
+		 linearGradient: [0, 0, 0, 50],
+		 stops: [
+			[0, 'rgba(96, 96, 96, .8)'],
+			[1, 'rgba(16, 16, 16, .8)']
+		 ]
+	  },
+	  borderWidth: 0,
+	  style: {
+		 color: '#FFF'
+	  }
+   },
+   
+   
+   plotOptions: {
+	  line: {
+		 dataLabels: {
+			color: '#CCC'
+		 },
+		 marker: {
+			lineColor: '#333'
+	
