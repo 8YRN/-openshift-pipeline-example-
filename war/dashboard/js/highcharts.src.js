@@ -601,3 +601,431 @@ defaultOptions = {
 	},
 	global: {
 		useUTC: true
+	},
+	chart: {
+		//alignTicks: false,
+		//className: null,
+		//events: { load, selection },
+		margin: [50, 50, 90, 80], // docs
+		//marginTop: 50,
+		//marginRight: 50,
+		//marginBottom: 90, // docs
+		//marginLeft: 50,
+		borderColor: '#4572A7',
+		//borderWidth: 0,
+		borderRadius: 5,		
+		defaultSeriesType: 'line',
+		ignoreHiddenSeries: true,
+		//inverted: false,
+		//shadow: false,
+		style: {
+			fontFamily: '"Lucida Grande", "Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif', // default font
+			fontSize: '12px'
+		},
+		backgroundColor: '#FFFFFF',
+		//plotBackgroundColor: null,
+		plotBorderColor: '#C0C0C0'
+		//plotBorderWidth: 0,
+		//plotShadow: false,
+		//zoomType: ''
+	},
+	title: {
+		text: 'Chart title',
+		x: 0,
+		y: 20,
+		align: 'center',
+		style: {
+			color: '#3E576F',
+			fontSize: '16px'
+		}
+
+	},
+	subtitle: {
+		text: '',
+		x: 0,
+		y: 40,
+		align: 'center',
+		style: {
+			color: '#6D869F'
+		}
+	},
+	
+	plotOptions: {
+		line: { // base series options
+			allowPointSelect: false,
+			showCheckbox: false,
+			animation: true,
+			//cursor: 'default',
+			//enableMouseTracking: true,
+			events: {},
+			lineWidth: 2,
+			shadow: true,
+			// stacking: null,
+			marker: { 
+				enabled: true,
+				//symbol: null, 
+				lineWidth: 0,
+				radius: 4,
+				lineColor: '#FFFFFF',
+				//fillColor: null, 
+				states: { // states for a single point
+					hover: {
+						//radius: base + 2
+					},
+					select: {
+						fillColor: '#FFFFFF',
+						lineColor: '#000000',
+						lineWidth: 2
+					}					
+				}
+			},
+			point: {
+				events: {}
+			},
+			dataLabels: merge(defaultLabelOptions, {
+				enabled: false,
+				y: -6,
+				formatter: function() {
+					return this.y;
+				}
+			}),
+			
+			//pointStart: 0,
+			//pointInterval: 1,
+			showInLegend: true,
+			states: { // states for the entire series
+				hover: {
+					//enabled: false,
+					lineWidth: 3,
+					marker: {
+						// lineWidth: base + 1,
+						// radius: base + 1
+					}
+				},
+				select: {
+					marker: {}
+				}
+			},
+			stickyTracking: true
+		}
+	},
+	labels: {
+		//items: [],
+		style: {
+			//font: defaultFont,
+			position: ABSOLUTE,
+			color: '#3E576F'
+		}
+	},
+	legend: {
+		enabled: true,
+		align: 'center',
+		layout: 'horizontal',
+		labelFormatter: function() {
+			return this.name;
+		},
+		// lineHeight: 16,
+		borderWidth: 1,
+		borderColor: '#909090',
+		borderRadius: 5,
+		//reversed: false,
+		shadow: false,
+		// backgroundColor: null,
+		style: {
+			padding: '5px'
+		},
+		itemStyle: {
+			cursor: 'pointer',
+			color: '#3E576F'
+		},
+		itemHoverStyle: {
+			cursor: 'pointer',
+			color: '#000000'
+		},
+		itemHiddenStyle: {
+			color: '#C0C0C0'
+		},
+		itemCheckboxStyle: {
+			position: ABSOLUTE,
+			width: '13px', // for IE precision
+			height: '13px'
+		},
+		// itemWidth: undefined,
+		symbolWidth: 16,
+		symbolPadding: 5,
+		verticalAlign: 'bottom',
+		// width: undefined,
+		x: 15,
+		y: -15
+	},
+	
+	loading: {
+		hideDuration: 100,
+		labelStyle: {
+			fontWeight: 'bold',
+			position: RELATIVE,
+			top: '1em'
+		},
+		showDuration: 100,
+		style: {
+			position: ABSOLUTE,
+			backgroundColor: 'white',
+			opacity: 0.5,
+			textAlign: 'center'
+		}
+	},
+	
+	tooltip: {
+		enabled: true,
+		formatter: function() {
+			var pThis = this,
+				series = pThis.series,
+				xAxis = series.xAxis,
+				x = pThis.x;
+			return '<b>'+ (pThis.point.name || series.name) +'</b><br/>'+
+				(defined(x) ? 
+					'X value: '+ (xAxis && xAxis.options.type == 'datetime' ? 
+						dateFormat(null, x) : x) +'<br/>':
+					'')+
+				'Y value: '+ pThis.y;
+		},
+		backgroundColor: 'rgba(255, 255, 255, .85)',
+		borderWidth: 2,
+		borderRadius: 5,
+		shadow: true,
+		snap: 10,
+		style: {
+			color: '#333333',
+			fontSize: '12px',
+			padding: '5px',
+			whiteSpace: 'nowrap'
+		}
+	},
+	
+	toolbar: {
+		itemStyle: {
+			color: '#4572A7',
+			cursor: 'pointer'
+		}
+	},
+	
+	credits: {
+		enabled: true,
+		text: 'Highcharts.com',
+		href: 'http://www.highcharts.com',
+		style: {
+			cursor: 'pointer',
+			color: '#909090',
+			fontSize: '10px'
+		}
+	}
+};
+
+// Axis defaults
+var defaultXAxisOptions =  {
+	// allowDecimals: null,
+	// alternateGridColor: null,
+	// categories: [],
+	dateTimeLabelFormats: {
+		second: '%H:%M:%S',
+		minute: '%H:%M',
+		hour: '%H:%M',
+		day: '%e. %b',
+		week: '%e. %b',
+		month: '%b \'%y',
+		year: '%Y'
+	},
+	endOnTick: false,
+	gridLineColor: '#C0C0C0',
+	// gridLineWidth: 0,
+	// reversed: false,
+	
+	labels: defaultLabelOptions,
+	lineColor: '#C0D0E0',
+	lineWidth: 1,
+	//linkedTo: null, // docs
+	max: null,
+	min: null,
+	minPadding: 0.01,
+	maxPadding: 0.01,
+	maxZoom: null,
+	minorGridLineColor: '#E0E0E0',
+	minorGridLineWidth: 1,
+	minorTickColor: '#A0A0A0',
+	//minorTickInterval: null,
+	minorTickLength: 2,
+	minorTickPosition: 'outside', // inside or outside
+	minorTickWidth: 1,
+	//opposite: false,
+	//offset: 0
+	//plotBands: [],
+	//plotLines: [],
+	//reversed: false,
+	showFirstLabel: true,
+	showLastLabel: false,
+	startOfWeek: 1, 
+	startOnTick: false,
+	tickColor: '#C0D0E0',
+	//tickInterval: null,
+	tickLength: 5,
+	tickmarkPlacement: 'between', // on or between
+	tickPixelInterval: 100,
+	tickPosition: 'outside',
+	tickWidth: 1,
+	title: {
+		//text: null,
+		align: 'middle', // low, middle or high
+		margin: 35,
+		//rotation: 0,
+		//side: 'outside',
+		style: {
+			color: '#6D869F',
+			//font: defaultFont.replace('normal', 'bold')
+			fontWeight: 'bold'
+		}
+		//x: 0, //docs
+		//y: 0 // docs
+	},
+	type: 'linear' // linear or datetime
+},
+
+defaultYAxisOptions = merge(defaultXAxisOptions, {
+	endOnTick: true,
+	gridLineWidth: 1,
+	tickPixelInterval: 72,
+	showLastLabel: true,
+	labels: {
+		align: 'right',
+		x: -8,
+		y: 3
+	},
+	lineWidth: 0,
+	maxPadding: 0.05,
+	minPadding: 0.05,
+	startOnTick: true,
+	tickWidth: 0,
+	title: {
+		margin: 40,
+		rotation: 270,
+		text: 'Y-values'
+	}
+}),
+
+defaultLeftAxisOptions = {
+	labels: {
+		align: 'right',
+		x: -8,
+		y: 3
+	},
+	title: {
+		rotation: 270
+	}
+},
+defaultRightAxisOptions = {
+	labels: {
+		align: 'left',
+		x: 8,
+		y: 3
+	},
+	title: {
+		rotation: 90
+	}
+},
+defaultBottomAxisOptions = { // horizontal axis
+	labels: {
+		align: 'center',
+		x: 0,
+		y: 14
+	},
+	title: {
+		rotation: 0
+	}
+},
+defaultTopAxisOptions = merge(defaultBottomAxisOptions, {
+	labels: {
+		y: -5
+	}
+});
+
+
+ 
+
+// Series defaults
+var defaultPlotOptions = defaultOptions.plotOptions, 
+	defaultSeriesOptions = defaultPlotOptions.line; 
+//defaultPlotOptions.line = merge(defaultSeriesOptions);
+defaultPlotOptions.spline = merge(defaultSeriesOptions);
+defaultPlotOptions.scatter = merge(defaultSeriesOptions, {
+	lineWidth: 0,
+	states: {
+		hover: {
+			lineWidth: 0
+		}
+	}
+});
+defaultPlotOptions.area = merge(defaultSeriesOptions, {
+	// threshold: 0,
+	// lineColor: null, // overrides color, but lets fillColor be unaltered
+	// fillOpacity: 0.75,
+	// fillColor: null
+
+});
+defaultPlotOptions.areaspline = merge(defaultPlotOptions.area);
+defaultPlotOptions.column = merge(defaultSeriesOptions, {
+	borderColor: '#FFFFFF',
+	borderWidth: 1,
+	borderRadius: 0,
+	//colorByPoint: undefined,
+	groupPadding: 0.2,
+	marker: null, // point options are specified in the base options
+	pointPadding: 0.1,
+	//pointWidth: null,
+	minPointLength: 0, 
+	states: {
+		hover: {
+			brightness: 0.1,
+			shadow: false
+		},
+		select: {
+			color: '#C0C0C0',
+			borderColor: '#000000',
+			shadow: false
+		}
+	}
+});
+defaultPlotOptions.bar = merge(defaultPlotOptions.column, {
+	dataLabels: {
+		align: 'left',
+		x: 5,
+		y: 0
+	}
+});
+defaultPlotOptions.pie = merge(defaultSeriesOptions, {
+	//dragType: '', // n/a
+	borderColor: '#FFFFFF',
+	borderWidth: 1,
+	center: ['50%', '50%'],
+	colorByPoint: true, // always true for pies
+	//innerSize: 0,
+	legendType: 'point',
+	marker: null, // point options are specified in the base options
+	size: '90%',
+	slicedOffset: 10,
+	states: {
+		hover: {
+			brightness: 0.1,
+			shadow: false
+		}
+	}
+	
+});
+
+// set the default time methods
+setTimeMethods();
+
+
+/**
+ * Extend a prototyped class by new members
+ * @param {Object} parent
+ * @param {Object} members
+ */
