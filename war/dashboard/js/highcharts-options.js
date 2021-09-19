@@ -109,4 +109,23 @@ Highcharts.setOptions({
 		 },
 		 marker: {
 			lineColor: '#333'
-	
+		 }
+	  },
+	  spline: {
+		 marker: {
+			lineColor: '#333'
+		 }
+	  },
+	  scatter: {
+		 marker: {
+			lineColor: '#333'
+		 }
+	  }
+   },
+   
+   toolbar: {
+	  itemStyle: {
+		 color: '#CCC'
+	  }
+   }
+});
