@@ -50,4 +50,31 @@ Highcharts.setOptions({
    yAxis: {
 	  alternateGridColor: null,
 	  minorTickInterval: null,
-	  gridLineColor: 'rgba(255,
+	  gridLineColor: 'rgba(255, 255, 255, .1)',
+	  lineWidth: 0,
+	  tickWidth: 0,
+	  labels: {
+		 style: {
+			color: '#999',
+			fontWeight: 'bold'
+		 }
+	  },
+	  title: {
+		 style: {
+			color: '#AAA',
+			font: 'bold 12px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+		 }            
+	  }
+   },
+   legend: {
+	  itemStyle: {
+		 color: '#CCC'
+	  },
+	  itemHoverStyle: {
+		 color: '#FFF'
+	  },
+	  itemHiddenStyle: {
+		 color: '#333'
+	  }
+   },
+   credi
