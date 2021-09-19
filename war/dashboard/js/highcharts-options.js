@@ -10,4 +10,21 @@ Highcharts.setOptions({
 		 ]
 		 //opacity: 0,
 	  },*/
-	  //bac
+	  //background: transparent,
+	  backgroundColor: 'rgba(0, 0, 0, 0)',
+	  borderWidth: 0,
+	  borderRadius: 15,
+	  plotBackgroundColor: null,
+	  plotShadow: true,
+	  plotBorderWidth: 0
+   },
+   title: {
+	  style: {
+		 color: '#FFF',
+		 font: '16px Lucida Grande, Lucida Sans Unicode, Verdana, Arial, Helvetica, sans-serif'
+	  }
+   },
+   subtitle: {
+	  style: {
+		 color: '#DDD',
+		 font: '12px Lucida Grande, Lucida Sans 
