@@ -1029,3 +1029,412 @@ setTimeMethods();
  * @param {Object} parent
  * @param {Object} members
  */
+function extendClass(parent, members) {
+	var object = function(){};
+	object.prototype = new parent();
+	extend(object.prototype, members);
+	return object;
+}
+
+
+/**
+ * Handle color operations. The object methods are chainable.
+ * @param {String} input The input color in either rbga or hex format
+ */
+var Color = function(input) {
+	// declare variables
+	var rgba = [], result;
+	
+	/**
+	 * Parse the input color to rgba array
+	 * @param {String} input
+	 */
+	function init(input) {
+		
+		// rgba
+		if((result = /rgba\(\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]{1,3})\s*,\s*([0-9]?(?:\.[0-9]+)?)\s*\)/.exec(input))) {
+			rgba = [parseInt(result[1], 10), parseInt(result[2], 10), parseInt(result[3], 10), parseFloat(result[4], 10)];
+		}
+
+		// hex
+		else if((result = /#([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})/.exec(input))) {
+			rgba = [parseInt(result[1],16), parseInt(result[2],16), parseInt(result[3],16), 1];
+		}
+	
+	}
+	/**
+	 * Return the color a specified format
+	 * @param {String} format
+	 */
+	function get(format) {
+		var ret;
+		
+		// it's NaN if gradient colors on a column chart
+		if (rgba && !isNaN(rgba[0])) {
+			if (format == 'rgb') {
+				ret = 'rgb('+ rgba[0] +','+ rgba[1] +','+ rgba[2] +')';
+			} else if (format == 'a') {
+				ret = rgba[3];
+			} else {
+				ret = 'rgba('+ rgba.join(',') +')';
+			}
+		} else {
+			ret = input;
+		}
+		return ret;
+	}
+	
+	/**
+	 * Brighten the color
+	 * @param {Object} alpha
+	 */
+	function brighten(alpha) {
+		if (typeof alpha == 'number' && alpha !== 0) {
+			for (var i = 0; i < 3; i++) {
+				rgba[i] += parseInt(alpha * 255, 10);
+				if (rgba[i] < 0) {
+					rgba[i] = 0;
+				}
+				if (rgba[i] > 255) {
+					rgba[i] = 255;
+				}
+			}
+		}
+		return this;
+	}
+	/**
+	 * Set the color's opacity to a given alpha value
+	 * @param {Number} alpha
+	 */
+	function setOpacity(alpha) {
+		rgba[3] = alpha;
+		return this;
+	}	
+	
+	// initialize: parse the input
+	init(input);
+	
+	// public methods
+	return {
+		get: get,
+		brighten: brighten,
+		setOpacity: setOpacity
+	};
+};
+
+
+
+/**
+ * Format a number and return a string based on input settings
+ * @param {Number} number The input number to format
+ * @param {Number} decimals The amount of decimals
+ * @param {String} decPoint The decimal point, defaults to the one given in the lang options
+ * @param {String} thousandsSep The thousands separator, defaults to the one given in the lang options
+ */
+function numberFormat (number, decimals, decPoint, thousandsSep) {
+	var lang = defaultOptions.lang,
+		// http://kevin.vanzonneveld.net/techblog/article/javascript_equivalent_for_phps_number_format/
+		n = number, c = isNaN(decimals = mathAbs(decimals)) ? 2 : decimals,
+		d = decPoint === undefined ? lang.decimalPoint : decPoint,
+		t = thousandsSep === undefined ? lang.thousandsSep : thousandsSep, s = n < 0 ? "-" : "",
+		i = parseInt(n = mathAbs(+n || 0).toFixed(c), 10) + "", j = (j = i.length) > 3 ? j % 3 : 0;
+    
+	return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) +
+		(c ? d + mathAbs(n - i).toFixed(c).slice(2) : "");
+}
+
+/**
+ * Based on http://www.php.net/manual/en/function.strftime.php 
+ * @param {String} format
+ * @param {Number} timestamp
+ * @param {Boolean} capitalize
+ */
+dateFormat = function (format, timestamp, capitalize) {
+	function pad (number) {
+		return number.toString().replace(/^([0-9])$/, '0$1');
+	}
+	
+	if (!defined(timestamp) || isNaN(timestamp)) {
+		return 'Invalid date';
+	}
+	format = pick(format, '%Y-%m-%d %H:%M:%S');
+	
+	var date = new Date(timestamp * timeFactor),
+	
+		// get the basic time values
+		hours = date[getHours](),
+		day = date[getDay](),
+		dayOfMonth = date[getDate](),
+		month = date[getMonth](),
+		fullYear = date[getFullYear](),
+		lang = defaultOptions.lang,
+		langWeekdays = lang.weekdays,
+		langMonths = lang.months,
+		
+		// list all format keys
+		replacements = {
+
+			// Day
+			'a': langWeekdays[day].substr(0, 3), // Short weekday, like 'Mon'
+			'A': langWeekdays[day], // Long weekday, like 'Monday'
+			'd': pad(dayOfMonth), // Two digit day of the month, 01 to 31 
+			'e': dayOfMonth, // Day of the month, 1 through 31 
+			
+			// Week (none implemented)
+			
+			// Month
+			'b': langMonths[month].substr(0, 3), // Short month, like 'Jan'
+			'B': langMonths[month], // Long month, like 'January'
+			'm': pad(month + 1), // Two digit month number, 01 through 12
+			
+			// Year
+			'y': fullYear.toString().substr(2, 2), // Two digits year, like 09 for 2009
+			'Y': fullYear, // Four digits year, like 2009
+			
+			// Time
+			'H': pad(hours), // Two digits hours in 24h format, 00 through 23
+			'I': pad((hours % 12) || 12), // Two digits hours in 12h format, 00 through 11
+			'l': (hours % 12) || 12, // Hours in 12h format, 1 through 12
+			'M': pad(date[getMinutes]()), // Two digits minutes, 00 through 59
+			'p': hours < 12 ? 'AM' : 'PM', // Upper case AM or PM
+			'P': hours < 12 ? 'am' : 'pm', // Lower case AM or PM
+			'S': pad(date.getSeconds()) // Two digits seconds, 00 through  59
+			
+		};
+
+
+	// do the replaces
+	for (var key in replacements) {
+		format = format.replace('%'+ key, replacements[key]);
+	}
+		
+	// Optionally capitalize the string and return
+	return capitalize ? format.substr(0, 1).toUpperCase() + format.substr(1) : format;
+};
+
+
+
+/**
+ * Loop up the node tree and add offsetWidth and offsetHeight to get the
+ * total page offset for a given element
+ * @param {Object} el
+ */
+function getPosition (el) {
+	var p = { x: el.offsetLeft, y: el.offsetTop };
+	while (el.offsetParent)	{
+		el = el.offsetParent;
+		p.x += el.offsetLeft;
+		p.y += el.offsetTop;
+		if (el != doc.body && el != doc.documentElement) {
+			p.x -= el.scrollLeft;
+			p.y -= el.scrollTop;
+		}
+	}
+	return p;
+}
+
+
+/**
+ * A wrapper object for SVG elements 
+ */
+function SVGElement () {}
+
+SVGElement.prototype = {
+	/**
+	 * Initialize the SVG renderer
+	 * @param {Object} renderer
+	 * @param {String} nodeName
+	 */
+	init: function(renderer, nodeName) {
+		this.element = doc.createElementNS('http://www.w3.org/2000/svg', nodeName);
+		this.renderer = renderer;
+	},
+	/**
+	 * Animate a given attribute
+	 * @param {Object} params
+	 * @param {Number} duration
+	 */
+	animate: function(params, duration) {
+		animate(this, params, duration);
+	},
+	/**
+	 * Set or get a given attribute
+	 * @param {Object|String} hash
+	 * @param {Mixed|Undefined} val
+	 */
+	attr: function(hash, val) {
+		var key, 
+			value, 
+			i, 
+			child,
+			element = this.element,
+			nodeName = element.nodeName,
+			renderer = this.renderer,
+			skipAttr,
+			shadows = this.shadows,
+			hasSetSymbolSize,
+			ret = this;
+			
+		// single key-value pair
+		if (typeof hash == 'string' && defined(val)) {
+			key = hash;
+			hash = {};
+			hash[key] = val;
+		}
+		
+		// used as a getter: first argument is a string, second is undefined
+		if (typeof hash == 'string') {
+			key = hash;
+			if (nodeName == 'circle') {
+				key = { x: 'cx', y: 'cy' }[key] || key;
+			} else if (key == 'strokeWidth') {
+				key = 'stroke-width';
+			}
+			ret = parseFloat(attr(element, key) || this[key] || 0);
+			
+		// setter
+		} else {
+		
+			for (key in hash) {
+				value = hash[key];
+				
+				// paths
+				if (key == 'd') {
+					if (value && value.join) { // join path
+						value = value.join(' ');
+					}
+					if (/(NaN|  |^$)/.test(value)) {
+						value = 'M 0 0';
+					}
+					
+				// update child tspans x values
+				} else if (key == 'x' && nodeName == 'text') { 
+					for (i = 0; i < element.childNodes.length; i++ ) {
+						child = element.childNodes[i];
+						// if the x values are equal, the tspan represents a linebreak
+						if (attr(child, 'x') == attr(element, 'x')) {
+							//child.setAttribute('x', value);
+							attr(child, 'x', value);
+						}
+					}
+					
+				// apply gradients
+				} else if (key == 'fill') {
+					value = renderer.color(value, element, key);
+				
+				// circle x and y
+				} else if (nodeName == 'circle') {
+					key = { x: 'cx', y: 'cy' }[key] || key;
+					
+				// translation
+				} else if (key == 'translateX' || key == 'translateY') {
+					this[key] = value;
+					this.updateTransform();
+					skipAttr = true;
+	
+				// apply opacity as subnode (required by legacy WebKit and Batik)
+				} else if (key == 'stroke') {
+					value = renderer.color(value, element, key);
+					 
+				
+				// special
+				} else if (key == 'isTracker') {
+					this[key] = value;
+				}
+				
+				// jQuery animate changes case
+				if (key == 'strokeWidth') {
+					key = 'stroke-width';
+				}
+				
+				// Chrome/Win < 6 bug (http://code.google.com/p/chromium/issues/detail?id=15461)				
+				if (isWebKit && key == 'stroke-width' && value === 0) {
+					value = 0.000001;
+				}
+				
+				// symbols
+				if (this.symbolName && /^(x|y|r|start|end|innerR)/.test(key)) {
+					
+					
+					if (!hasSetSymbolSize) {
+						this.symbolAttr(hash);
+						hasSetSymbolSize = true;
+					}
+					skipAttr = true;
+				}
+				
+				// let the shadow follow the main element
+				if (shadows && /^(width|height|visibility|x|y|d)$/.test(key)) {
+					i = shadows.length;
+					while (i--) {
+						attr(shadows[i], key, value);
+					}
+					
+				}
+				
+					
+				
+				if (key == 'text') {
+					// only one node allowed
+					renderer.buildText(element, value);
+				} else if (!skipAttr) {
+					//element.setAttribute(key, value);
+					attr(element, key, value);
+				}
+			}
+			
+		}
+		return ret;
+	},
+	
+	/**
+	 * If one of the symbol size affecting parameters are changed,
+	 * check all the others only once for each call to an element's
+	 * .attr() method
+	 * @param {Object} hash
+	 */
+	symbolAttr: function(hash) {
+		var wrapper = this;
+		
+		wrapper.x = pick(hash.x, wrapper.x);
+		wrapper.y = parseFloat(pick(hash.y, wrapper.y)); // mootools animation bug needs parseFloat
+		wrapper.r = pick(hash.r, wrapper.r);
+		wrapper.start = pick(hash.start, wrapper.start);
+		wrapper.end = pick(hash.end, wrapper.end);
+		wrapper.width = pick(hash.width, wrapper.width);
+		wrapper.height = parseFloat(pick(hash.height, wrapper.height));
+		wrapper.innerR = pick(hash.innerR, wrapper.innerR);
+		
+		wrapper.attr({ 
+			d: wrapper.renderer.symbols[wrapper.symbolName](wrapper.x, wrapper.y, wrapper.r, {
+				start: wrapper.start, 
+				end: wrapper.end,
+				width: wrapper.width, 
+				height: wrapper.height,
+				innerR: wrapper.innerR
+			})
+		});
+	},
+	
+	/**
+	 * Apply a clipping path to this object
+	 * @param {String} id
+	 */
+	clip: function(clipRect) {
+		return this.attr('clip-path', 'url('+ this.renderer.url +'#'+ clipRect.id +')');
+	},
+	
+	/**
+	 * Set styles for the element
+	 * @param {Object} styles
+	 */
+	css: function(styles) {
+		var elemWrapper = this;
+		
+		// convert legacy
+		if (styles && styles.color) {
+			styles.fill = styles.color;
+		}
+		
+		// save the styles in an object
+		styles = extend(
