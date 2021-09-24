@@ -1438,3 +1438,437 @@ SVGElement.prototype = {
 		
 		// save the styles in an object
 		styles = extend(
+			elemWrapper.styles,
+			styles
+		);
+		
+		// serialize and set style attribute
+		elemWrapper.attr({
+			style: serializeCSS(styles)
+		});
+		
+		// store object
+		elemWrapper.styles = styles;
+		
+		return elemWrapper;
+	},
+	
+	/**
+	 * Add an event listener
+	 * @param {String} eventType
+	 * @param {Function} handler
+	 */
+	on: function(eventType, handler) {
+		// simplest possible event model for internal use
+		this.element['on'+ eventType] = handler;
+		return this;
+	},
+	
+	
+	/**
+	 * Move an object and its children by x and y values
+	 * @param {Number} x
+	 * @param {Number} y
+	 */
+	translate: function(x, y) {
+		var wrapper = this;
+		wrapper.translateX = x;
+		wrapper.translateY = y;
+		wrapper.updateTransform();
+		return wrapper;
+	},
+	
+	/**
+	 * Invert a group, rotate and flip
+	 */
+	invert: function() {
+		var wrapper = this;
+		wrapper.inverted = true;
+		wrapper.updateTransform();
+		return wrapper;
+	},
+	
+	/**
+	 * Private method to update the transform attribute based on internal 
+	 * properties
+	 */
+	updateTransform: function() {
+		var wrapper = this,
+			translateX = wrapper.translateX || 0,
+			translateY = wrapper.translateY || 0,
+			inverted = wrapper.inverted,
+			transform = [];
+			
+		// flipping affects translate as adjustment for flipping around the group's axis
+		if (inverted) {
+			translateX += wrapper.attr('width');
+			translateY += wrapper.attr('height');
+		}
+			
+		// apply translate
+		if (translateX || translateY) {
+			transform.push('translate('+ translateX +','+ translateY +')');
+		}
+		
+		// apply rotation
+		if (inverted) {
+			transform.push('rotate(90) scale(-1,1)');
+		}
+		
+		if (transform.length) {
+			attr(wrapper.element, 'transform', transform.join(' '));
+		}
+	},
+	/**
+	 * Bring the element to the front
+	 */
+	toFront: function() {
+		var element = this.element;
+		element.parentNode.appendChild(element);
+		return this;
+	},
+	/**
+	 * Get the bounding box (width, height, x and y) for the element
+	 */
+	getBBox: function() {
+		return this.element.getBBox();
+	},
+	
+	/**
+	 * Show the element
+	 */
+	show: function() {
+		return this.attr({ visibility: VISIBLE });
+	},
+	
+	/**
+	 * Hide the element
+	 */
+	hide: function() {
+		return this.attr({ visibility: HIDDEN });
+	},
+	
+	/**
+	 * Add the element
+	 * @param {Object|Undefined} parent Can be an element, an element wrapper or undefined
+	 *    to append the element to the renderer.box.
+	 */ 
+	add: function(parent) {
+	
+		var renderer = this.renderer,
+			parentWrapper = parent || renderer,
+			parentNode = parentWrapper.element || renderer.box,
+			childNodes = parentNode.childNodes,
+			element = this.element,
+			zIndex = attr(element, 'zIndex'),
+			otherElement,
+			otherZIndex,
+			i;
+			
+		// mark as inverted
+		this.parentInverted = parent && parent.inverted;
+		
+		// mark the container as having z indexed children
+		if (zIndex) {
+			parentWrapper.handleZ = true;
+			zIndex = parseInt(zIndex, 10);
+		}
+
+		// insert according to this and other elements' zIndex
+		if (parentWrapper.handleZ) { // this element or any of its siblings has a z index
+			for (i = 0; i < childNodes.length; i++) {
+				otherElement = childNodes[i];
+				otherZIndex = attr(otherElement, 'zIndex');
+				if (otherElement != element && (
+						// insert before the first element with a higher zIndex
+						parseInt(otherZIndex, 10) > zIndex || 
+						// if no zIndex given, insert before the first element with a zIndex
+						(!defined(zIndex) && defined(otherZIndex))  
+						
+						)) {
+					parentNode.insertBefore(element, otherElement);
+					return this;
+				}
+			}
+		}
+		
+		// default: append at the end
+		parentNode.appendChild(element);
+		return this;
+	},
+	
+	/**
+	 * Destroy the element and element wrapper
+	 */
+	destroy: function() {
+		var wrapper = this,
+			element = wrapper.element,
+			shadows = wrapper.shadows,
+			parentNode = element.parentNode,
+			key;
+		
+		element.onclick = element.onmouseout = element.onmouseover = element.onmousemove = null;
+		stop(wrapper); // stop running animations
+		if (parentNode) {
+			parentNode.removeChild(element);
+		}
+		
+		if (shadows) {
+			each(shadows, function(shadow) {
+				parentNode = shadow.parentNode;
+				if (parentNode) { // the entire chart HTML can be overwritten
+					parentNode.removeChild(shadow);
+				}				
+			});
+		}
+				
+		for (key in wrapper) {
+			delete wrapper[key];
+		}
+		
+		return null;
+	},
+	
+	/**
+	 * Empty a group element
+	 */
+	empty: function() {
+		var element = this.element,
+			childNodes = element.childNodes,
+			i = childNodes.length;
+			
+		while (i--) {
+			element.removeChild(childNodes[i]);
+		}
+	},
+	
+	/**
+	 * Add a shadow to the element. Must be done after the element is added to the DOM
+	 * @param {Boolean} apply
+	 */
+	shadow: function(apply) {
+		var shadows = [],
+			i,
+			shadow,
+			element = this.element,
+			
+			// compensate for inverted plot area
+			transform = this.parentInverted ? '(-1,-1)' : '(1,1)';
+			
+		
+		if (apply) {
+			//obj.shadows = [];
+			for (i = 1; i <= 3; i++) {
+				/*this.drawRect(x + 1, y + 1, w, h, 'rgba(0, 0, 0, '+ (0.05 * i) +')', 
+					6 - 2 * i, radius);*/
+					
+				shadow = element.cloneNode(0);
+				attr(shadow, {
+					'isShadow': 'true',
+					'stroke': 'rgb(0, 0, 0)',
+					'stroke-opacity': 0.05 * i,
+					'stroke-width': 7 - 2 * i,
+					'transform': 'translate'+ transform,
+					'fill': NONE
+				});
+				
+				
+				element.parentNode.insertBefore(shadow, element);
+				
+				shadows.push(shadow);
+			}
+			
+			this.shadows = shadows;
+		}
+		return this;
+	
+	}
+};
+
+
+
+/**
+ * The default SVG renderer
+ */
+var SVGRenderer = function() {
+	this.init.apply(this, arguments);
+};
+SVGRenderer.prototype = {
+	/**
+	 * Initialize the SVGRenderer
+	 * @param {Object} container
+	 * @param {Number} width
+	 * @param {Number} height
+	 */
+	init: function(container, width, height) {
+		var box = doc.createElementNS('http://www.w3.org/2000/svg', 'svg'),
+			loc = location;
+		attr(box, {
+			width: width,
+			height: height,
+			xmlns: 'http://www.w3.org/2000/svg',
+			version: '1.1'
+		});
+		container.appendChild(box);
+		
+		// object properties
+		this.Element = SVGElement;
+		this.box = box;
+		this.url = isIE ? '' : loc.href.replace(/#.*?$/, ''); // page url used for internal references
+		this.defs = this.createElement('defs').add();
+	},
+	
+	
+	/**
+	 * Create a wrapper for an SVG element
+	 * @param {Object} nodeName
+	 */
+	createElement: function(nodeName) {
+		var wrapper = new this.Element();
+		wrapper.init(this, nodeName);
+		return wrapper;
+	},
+	
+	
+	/** 
+	 * Parse a simple HTML string into SVG tspans
+	 * 
+	 * @param {Object} textNode The parent text SVG node
+	 * @param {String} str
+	 */
+	buildText: function(textNode, str) {
+		var lines = str.toString()
+				.replace(/<(b|strong)>/g, '<span style="font-weight:bold">')
+				.replace(/<(i|em)>/g, '<span style="font-style:italic">')
+				.replace(/<a/g, '<span')
+				.replace(/<\/(b|strong|i|em|a)>/g, '</span>')
+				.split(/<br[^>]?>/g),
+			childNodes = textNode.childNodes,
+			styleRegex = /style="([^"]+)"/,
+			hrefRegex = /href="([^"]+)"/,
+			parentX = attr(textNode, 'x'),
+			i = childNodes.length;
+			
+		// remove old text
+		while (i--) {
+			textNode.removeChild(childNodes[i]);
+		}
+		
+		
+		each (lines, function(line, lineNo) {
+			var spans, spanNo = 0;
+			
+			line = line.replace(/<span/g, '|||<span').replace(/<\/span>/g, '</span>|||');
+			spans = line.split('|||');
+			
+			each (spans, function (span) {
+				if (span !== '' || spans.length == 1) {
+					
+					var attributes = {},
+						tspan = doc.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+					
+					if (styleRegex.test(span)) {
+						attr(
+							tspan, 
+							'style', 
+							span.match(styleRegex)[1].replace(/(;| |^)color([ :])/, '$1fill$2')
+						);
+					}
+					if (hrefRegex.test(span)) {
+						attr(tspan, 'onclick', 'location.href=\"'+ span.match(hrefRegex)[1] +'\"');
+						css(tspan, { cursor: 'pointer' });
+					}
+					
+					span = span.replace(/<(.|\n)*?>/g, '');
+					tspan.appendChild(doc.createTextNode(span || ' ')); // WebKit needs a string
+					//console.log('"'+tspan.textContent+'"');
+					if (!spanNo) { // first span in a line, align it to the left
+						attributes.x = parentX;
+					} else {
+						// Firefox ignores spaces at the front or end of the tspan
+						attributes.dx = 3; // space
+					}
+					if (lineNo && !spanNo) { // first span on subsequent line, add the line height
+						attributes.dy = 16;
+					}
+					
+					attr(tspan, attributes);
+					
+					textNode.appendChild(tspan);
+					
+					spanNo++;
+				}
+			});
+			
+		});
+	},
+	
+	/**
+	 * Make a straight line crisper by not spilling out to neighbour pixels
+	 * @param {Array} points
+	 * @param {Number} width 
+	 */
+	crispLine: function(points, width) {
+		// points format: [M, 0, 0, L, 100, 0]
+		// normalize to a crisp line
+		if (points[1] == points[4]) {
+			points[1] = points[4] = mathRound(points[1]) + (width % 2 / 2);
+		}
+		if (points[2] == points[5]) {
+			points[2] = points[5] = mathRound(points[2]) + (width % 2 / 2);
+		}
+		return points;
+	},
+	
+	
+	/**
+	 * Draw a path
+	 * @param {Array} path An SVG path in array form
+	 */
+	path: function (path) {
+		return this.createElement('path').attr({ 
+			d: path, 
+			fill: NONE
+		});
+	},
+	
+	/**
+	 * Draw and return an SVG circle
+	 * @param {Number} x The x position
+	 * @param {Number} y The y position
+	 * @param {Number} r The radius
+	 */
+	circle: function (x, y, r) {
+		var attr = typeof x == 'object' ?
+			x :
+			{
+				x: x,
+				y: y,
+				r: r
+			};
+		
+		return this.createElement('circle').attr(attr);
+	},
+	
+	/**
+	 * Draw and return an arc
+	 * @param {Number} x X position
+	 * @param {Number} y Y position
+	 * @param {Number} r Radius
+	 * @param {Number} innerR Inner radius like used in donut charts
+	 * @param {Number} start Starting angle
+	 * @param {Number} end Ending angle
+	 */
+	arc: function (x, y, r, innerR, start, end) {
+		// arcs are defined as symbols for the ability to set 
+		// attributes in attr and animate
+		
+		if (typeof x == 'object') {
+			y = x.y;
+			r = x.r;
+			innerR = x.innerR;
+			start = x.start;
+			end = x.end;
+			x = x.x;
+		}
+		
