@@ -1872,3 +1872,444 @@ SVGRenderer.prototype = {
 			x = x.x;
 		}
 		
+		return this.symbol('arc', x || 0, y || 0, r || 0, {
+			innerR: innerR || 0,
+			start: start || 0,
+			end: end || 0
+		});
+	},
+	
+	/**
+	 * Draw and return a rectangle
+	 * @param {Number} x Left position
+	 * @param {Number} y Top position
+	 * @param {Number} width
+	 * @param {Number} height
+	 * @param {Number} r Border corner radius
+	 * @param {Number} strokeWidth A stroke width can be supplied to allow crisp drawing
+	 */
+	rect: function (x, y, width, height, r, strokeWidth) {
+		
+		if (arguments.length > 1) {
+			var normalizer = (strokeWidth || 0) % 2 / 2;
+
+			// normalize for crisp edges
+			x = mathRound(x || 0) + normalizer;
+			y = mathRound(y || 0) + normalizer;
+			width = mathRound((width || 0) - 2 * normalizer);
+			height = mathRound((height || 0) - 2 * normalizer);
+		}
+		
+		var attr = typeof x == 'object' ? 
+			x : // the attributes can be passed as the first argument
+			{
+				x: x,
+				y: y,
+				width: mathMax(width, 0),
+				height: mathMax(height, 0)
+			};			
+		
+		return this.createElement('rect').attr(extend(attr, {
+			rx: r || attr.r,
+			ry: r || attr.r,
+			fill: NONE
+		}));
+	},
+	
+	/**
+	 * Create a group
+	 * @param {String} name The group will be given a class name of 'highcharts-{name}'.
+	 *     This can be used for styling and scripting.
+	 */
+	g: function(name) {
+		return this.createElement('g').attr(
+			defined(name) && { 'class': PREFIX + name }
+		);
+	},
+	
+	/**
+	 * Display an image
+	 * @param {String} src
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} width
+	 * @param {Number} height
+	 */
+	image: function(src, x, y, width, height) {
+		var elemWrapper = this.createElement('image').attr({
+			x: x,
+			y: y,
+			width: width,
+			height: height,
+			preserveAspectRatio: NONE
+		});		
+		
+		// set the href in the xlink namespace
+		elemWrapper.element.setAttributeNS('http://www.w3.org/1999/xlink', 
+			'href', src);
+			
+		return elemWrapper;					
+	},
+	
+	/**
+	 * Draw a symbol out of pre-defined shape paths from the namespace 'symbol' object.
+	 * 
+	 * @param {Object} symbol
+	 * @param {Object} x
+	 * @param {Object} y
+	 * @param {Object} radius
+	 * @param {Object} options
+	 */
+	symbol: function(symbol, x, y, radius, options) {
+		
+		var obj,
+			
+			// get the symbol definition function
+			symbolFn = this.symbols[symbol],
+			
+			// check if there's a path defined for this symbol
+			path = symbolFn && symbolFn(
+				x, 
+				y, 
+				radius, 
+				options
+			),
+			
+			imageRegex = /^url\((.*?)\)$/,
+			imageSrc;
+			
+		
+		if (path) {
+			obj = this.path(path);
+			// expando properties for use in animate and attr
+			extend(obj, {
+				symbolName: symbol,
+				x: x,
+				y: y,
+				r: radius
+			});
+			if (options) {
+				extend(obj, options);
+			}
+			
+			
+		// image symbols
+		} else if (imageRegex.test(symbol)) {
+			imageSrc = symbol.match(imageRegex)[1];
+			
+			
+			// create the image
+			obj = this.image(imageSrc).attr({
+				visibility: HIDDEN
+			});
+			// create a dummy JavaScript image to get the width and height  
+			createElement('img', {
+				onload: function() {
+					var img = this,
+						size = symbolSizes[img.src] || [img.width, img.height];
+					obj.attr({
+						x: mathRound(x - size[0] / 2) + PX,
+						y: mathRound(y - size[1] / 2) + PX,
+						width: size[0],
+						height: size[1],
+						visibility: 'inherit'
+					});
+				},
+				src: imageSrc
+			});
+				
+		// default circles
+		} else {
+			obj = this.circle (x, y, radius);
+		}
+		
+		return obj;
+	},
+	
+	/**
+	 * An extendable collection of functions for defining symbol paths.
+	 */
+	symbols: {
+		'square': function (x, y, radius) {
+			var len = 0.707 * radius;
+			return [
+				M, x-len, y-len,
+				L, x+len, y-len,
+				x+len, y+len,
+				x-len, y+len,
+				'Z'
+			];
+		},
+			
+		'triangle': function (x, y, radius) {
+			return [
+				M, x, y-1.33 * radius,
+				L, x+radius, y + 0.67 * radius,
+				x-radius, y + 0.67 * radius,
+				'Z'
+			];
+		},
+			
+		'triangle-down': function (x, y, radius) {
+			return [
+				M, x, y + 1.33 * radius,
+				L, x-radius, y-0.67 * radius,
+				x+radius, y-0.67 * radius,
+				'Z'
+			];
+		},
+		'diamond': function (x, y, radius) {
+			return [
+				M, x, y-radius,
+				L, x+radius, y,
+				x, y+radius,
+				x-radius, y,
+				'Z'
+			];
+		},
+		'arc': function (x, y, radius, options) {
+			var pi = Math.PI,
+				start = options.start,
+				end = options.end - 0.000001, // to prevent cos and sin of start and end from becoming equal on 360 arcs
+				innerRadius = options.innerR,
+				cosStart = mathCos(start),
+				sinStart = mathSin(start),
+				cosEnd = mathCos(end),
+				sinEnd = mathSin(end),
+				longArc = options.end - start < pi ? 0 : 1;
+				
+			return [
+				M,
+				x + radius * cosStart,
+				y + radius * sinStart,
+				'A', // arcTo
+				radius, // x radius
+				radius, // y radius
+				0, // slanting
+				longArc, // long or short arc
+				1, // clockwise
+				x + radius * cosEnd,
+				y + radius * sinEnd,
+				L,				
+				x + innerRadius * cosEnd, 
+				y + innerRadius * sinEnd,
+				'A', // arcTo
+				innerRadius, // x radius
+				innerRadius, // y radius
+				0, // slanting
+				longArc, // long or short arc
+				0, // clockwise
+				x + innerRadius * cosStart,
+				y + innerRadius * sinStart,
+				
+				'Z' // close
+			];
+		}
+	},
+	
+	/**
+	 * Define a clipping rectangle
+	 * @param {String} id
+	 * @param {Number} x
+	 * @param {Number} y
+	 * @param {Number} width
+	 * @param {Number} height
+	 */
+	clipRect: function (x, y, width, height) {
+		var wrapper,
+			id = PREFIX + idCounter++,
+			
+			clipPath = this.createElement('clipPath').attr({
+				id: id
+			}).add(this.defs);
+		
+		wrapper = this.rect(x, y, width, height, 0).add(clipPath);
+		wrapper.id = id;
+		
+		return wrapper;
+	},
+	
+	
+	/**
+	 * Take a color and return it if it's a string, make it a gradient if it's a
+	 * gradient configuration object
+	 * 
+	 * @param {Object} color The color or config object
+	 */
+	color: function(color, elem, prop) {
+		var colorObject,
+			regexRgba = /^rgba/;
+		if (color && color.linearGradient) {
+			var renderer = this,
+				strLinearGradient = 'linearGradient',
+				linearGradient = color[strLinearGradient],
+				id = PREFIX + idCounter++,
+				gradientObject,
+				stopColor,
+				stopOpacity;
+			gradientObject = renderer.createElement(strLinearGradient).attr({
+				id: id,
+				gradientUnits: 'userSpaceOnUse',
+				x1: linearGradient[0],
+				y1: linearGradient[1],
+				x2: linearGradient[2],
+				y2: linearGradient[3]
+			}).add(renderer.defs);
+			
+			each(color.stops, function(stop) {
+				if (regexRgba.test(stop[1])) {
+					colorObject = Color(stop[1]);
+					stopColor = colorObject.get('rgb');
+					stopOpacity = colorObject.get('a');
+				} else {
+					stopColor = stop[1];
+					stopOpacity = 1;
+				}
+				renderer.createElement('stop').attr({
+					offset: stop[0],
+					'stop-color': stopColor,
+					'stop-opacity': stopOpacity
+				}).add(gradientObject);
+			});
+			
+			return 'url('+ this.url +'#'+ id +')';
+			
+		// Webkit and Batik can't show rgba.
+		} else if (regexRgba.test(color)) {
+			colorObject = Color(color);
+			attr(elem, prop +'-opacity', colorObject.get('a'));
+			
+			return colorObject.get('rgb');
+			
+			
+		} else {
+			return color;
+		}
+		
+	},
+	
+		
+	/**
+	 * Add text to the SVG object
+	 * @param {String} str
+	 * @param {Number} x Left position
+	 * @param {Number} y Top position
+	 * @param {Object} style CSS styles for the text
+	 * @param {Nubmer} rotation Rotation in degrees
+	 * @param {String} align Left, center or right
+	 */
+	text: function(str, x, y, style, rotation, align) {
+		style = style || {};
+		align = align || 'left';
+		rotation = rotation || 0;
+		
+		// declare variables
+		var attribs,
+			css, 
+			fill = style.color || '#000000',
+			defaultChartStyle = defaultOptions.chart.style;
+	
+		x = mathRound(pick(x, 0));
+		y = mathRound(pick(y, 0));
+		
+		extend(style, {
+			fontFamily: style.fontFamily || defaultChartStyle.fontFamily,
+			fontSize: style.fontSize || defaultChartStyle.fontSize
+		});
+		
+		// prepare style
+		css = serializeCSS(style);
+		
+		// prepare attributes
+		attribs = {
+				x: x,
+				y: y,
+				text: str,
+				fill: fill,
+				style: css.replace(/"/g, "'")
+				
+			};
+			
+		if (rotation || align != 'left') {
+			attribs = extend(attribs, {
+				'text-anchor': { left: 'start', center: 'middle', right: 'end' }[align],
+				transform: 'rotate('+ rotation +' '+ x +' '+ y +')'
+
+			});
+		}
+
+		
+		return this.createElement('text').attr(attribs);
+		//}
+	}
+}; // end SVGRenderer
+
+
+
+
+/* **************************************************************************** 
+ *                                                                            * 
+ * START OF INTERNET EXPLORER <= 8 SPECIFIC CODE                              *
+ *                                                                            *
+ * For applications and websites that don't need IE support, like platform    *
+ * targeted mobile apps and web apps, this code can be removed.               *
+ *                                                                            *
+ *****************************************************************************/
+var VMLRenderer;
+if (!hasSVG) {
+
+/**
+ * The VML element wrapper.
+ */
+var VMLElement = extendClass( SVGElement, {
+	
+	/**
+	 * Initialize a new VML element wrapper. It builds the markup as a string
+	 * to minimize DOM traffic.
+	 * @param {Object} renderer
+	 * @param {Object} nodeName
+	 */
+	init: function(renderer, nodeName) {
+		var markup =  ['<', nodeName, ' filled="f" stroked="f"'],
+			style = ['position: ', ABSOLUTE, ';'];
+		
+		// divs and shapes need size
+		if (nodeName == 'shape' || nodeName == DIV) {
+			style.push('left:0;top:0;width:10px;height:10px');
+		}
+		markup.push(' style="', style.join(''), '"/>');
+		
+		// create element with default attributes and style
+		if (nodeName) {
+			markup = nodeName == DIV || nodeName == 'span' || nodeName == 'img' ? 
+				markup.join('')
+				: renderer.prepVML(markup);
+			this.element = createElement(markup);
+		}
+		
+		this.renderer = renderer;
+	},
+	
+	/**
+	 * Add the node to the given parent
+	 * @param {Object} parent
+	 */
+	add: function(parent) {
+		var wrapper = this,
+			renderer = wrapper.renderer,
+			element = wrapper.element,
+			box = renderer.box,
+			inverted = parent && parent.inverted,
+			parentStyle,
+		
+			// get the parent node
+			parentNode = parent ? 
+				parent.element || parent : 
+				box;
+			
+			
+		// if the parent group is inverted, apply inversion on all children
+		if (inverted) { // only on groups
+			
+			parentStyle = parentNode.style;
+			
