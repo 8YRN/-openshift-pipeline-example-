@@ -4423,3 +4423,416 @@ function Chart (options, callback) {
 				each (associatedSeries, function(series) {
 					series.translate();
 					series.setTooltipPoints(true);
+				});
+				
+				
+				// optionally redraw
+				axis.isDirty = true;
+				if (pick(doRedraw, true)) {
+					redraw();  // redraw axis
+				}
+		}
+		
+		
+		
+		// Run Axis
+			
+		// inverted charts have reversed xAxes as default
+		if (inverted && isXAxis && reversed === UNDEFINED) {
+			reversed = true;
+		}
+			
+		// negate offset
+		if (!opposite) {
+			offset *= -1;
+		}
+		if (horiz) {
+			offset *= -1;
+		} 
+			
+		// expose some variables
+		extend (axis, {
+			addPlotBand: addPlotBandOrLine,
+			addPlotLine: addPlotBandOrLine,
+			adjustTickAmount: adjustTickAmount,
+			categories: categories,
+			getExtremes: getExtremes,
+			getThreshold: getThreshold,
+			isXAxis: isXAxis,
+			options: options,
+			render: render,
+			setExtremes: setExtremes,
+			setScale: setScale,
+			setCategories: setCategories,
+			translate: translate,
+			redraw: redraw,
+			removePlotBand: removePlotBandOrLine,
+			removePlotLine: removePlotBandOrLine,
+			reversed: reversed,
+			stacks: stacks
+		});
+		
+		// register event listeners
+		for (eventType in events) {
+			addEvent(axis, eventType, events[eventType]);
+		}
+		
+		// set min and max
+		setScale();
+			
+	
+	} // end Axis
+	
+	
+	/**
+	 * The toolbar object
+	 * 
+	 * @param {Object} chart 
+	 */
+	function Toolbar(chart) {
+		var buttons = {};
+		
+		function add(id, text, title, fn) {
+			if (!buttons[id]) {
+				var button = renderer.text(
+					text,
+					plotLeft + plotWidth - 20,
+					plotTop + 30,
+					options.toolbar.itemStyle,
+					0,
+					'right'
+				)
+				.on('click', fn)
+				.attr({ zIndex: 20 })
+				.add();
+				buttons[id] = button;
+			}
+		}
+		function remove(id) {
+			discardElement(buttons[id].element);
+			buttons[id] = null;
+		}
+		
+		// public
+		return {
+			add: add,
+			remove: remove
+		};
+	}
+	
+	/**
+	 * The tooltip object
+	 * @param {Object} options Tooltip options
+	 */
+	function Tooltip (options) {
+		var currentSeries,
+			borderWidth = options.borderWidth,
+			style = options.style,
+			padding = parseInt(style.padding, 10),
+			boxOffLeft = borderWidth + padding, // off left/top position as IE can't 
+				//properly handle negative positioned shapes
+			tooltipIsHidden = true,
+			boxWidth,
+			boxHeight,
+			currentX = 0,			
+			currentY = 0;
+		
+		// remove padding CSS and apply padding on box instead
+		style.padding = 0;
+		
+		// create the elements
+		var group = renderer.g('tooltip')
+			.attr({ zIndex: 8 })
+			.add(),
+			
+			box = renderer.rect(boxOffLeft, boxOffLeft, 0, 0, options.borderRadius, borderWidth).
+				attr({
+					fill: options.backgroundColor,
+					'stroke-width': borderWidth
+				}).
+				add(group).
+				shadow(options.shadow),
+			label = renderer.text('', padding + boxOffLeft, parseInt(style.fontSize, 10) + padding + boxOffLeft).
+				attr({ zIndex: 1 }).
+				css(style).
+				add(group);
+				
+				
+		/**
+		 * Provide a soft movement for the tooltip
+		 * 
+		 * @param {Number} finalX
+		 * @param {Number} finalY 
+		 */
+		function move(finalX, finalY) {
+
+			currentX = tooltipIsHidden ? finalX : (2 * currentX + finalX) / 3;
+			currentY = tooltipIsHidden ? finalY : (currentY + finalY) / 2;
+			
+			group.translate(currentX, currentY);
+			
+			
+			// run on next tick of the mouse tracker
+			if (mathAbs(finalX - currentX) > 1 || mathAbs(finalY - currentY) > 1) {
+				tooltipTick = function() {
+					move(finalX, finalY);
+				};
+			} else {
+				tooltipTick = null;
+			}
+		}
+		
+		/**
+		 * Hide the tooltip
+		 */
+		function hide() {
+
+			tooltipIsHidden = true;
+			group.hide();
+		}
+		
+		/**
+		 * Refresh the tooltip's text and position. 
+		 * @param {Object} point
+		 * 
+		 */
+		function refresh(point) {
+			var 
+				series = point.series,
+				borderColor = options.borderColor || point.color || series.color || '#606060',
+				x,
+				y,
+				boxX,
+				boxY,
+				show,
+				bBox,
+				text = point.tooltipText,
+				tooltipPos = point.tooltipPos;
+				
+			
+			// register the current series
+			currentSeries = series;
+			
+			// get the reference point coordinates (pie charts use tooltipPos)
+			x = mathRound(tooltipPos ? tooltipPos[0] : (inverted ? plotWidth - point.plotY : point.plotX));
+			y = mathRound(tooltipPos ? tooltipPos[1] : (inverted ? plotHeight - point.plotX : point.plotY));
+				
+				
+			// hide tooltip if the point falls outside the plot
+			show = isInsidePlot(x, y);
+			
+			// update the inner HTML
+			if (text === false || !show) { 
+				hide();
+			} else {
+				
+			    // show it
+				if (tooltipIsHidden) {
+					group.show();
+					tooltipIsHidden = false;
+				}
+				
+				// update text
+				label.attr({
+					text: text
+				});
+				
+				// get the bounding box
+				bBox = label.getBBox();
+				boxWidth = bBox.width;
+				boxHeight = bBox.height;
+				
+				// set the size of the box
+				box.attr({
+					width: boxWidth + 2 * padding,
+					height: boxHeight + 2 * padding,
+					stroke: borderColor
+				});
+				
+				// keep the box within the chart area
+				boxX = x - boxWidth + plotLeft - 25;
+				boxY = y - boxHeight + plotTop + 10;
+				
+				// it is too far to the left, adjust it
+				if (boxX < 7) {
+					boxX = 7;
+					boxY -= 20;
+				}
+				
+				
+				if (boxY < 5) {
+					boxY = 5; // above
+				} else if (boxY + boxHeight > chartHeight) { 
+					boxY = chartHeight - boxHeight - 5; // below
+				}
+				
+				// do the move
+				move(mathRound(boxX - boxOffLeft), mathRound(boxY - boxOffLeft));
+				
+				
+			}
+		
+		}
+		
+
+		
+		// public members
+		return {
+			refresh: refresh,
+			hide: hide
+		};	
+	}
+	
+	/**
+	 * The mouse tracker object
+	 * @param {Object} chart
+	 * @param {Object} options
+	 */
+	function MouseTracker (chart, options) {
+
+		
+		var mouseDownX, 
+			mouseDownY,
+			hasDragged,
+			selectionMarker,
+			zoomType = optionsChart.zoomType,
+			zoomX = /x/.test(zoomType),
+			zoomY = /y/.test(zoomType),
+			zoomHor = zoomX && !inverted || zoomY && inverted,
+			zoomVert = zoomY && !inverted || zoomX && inverted;
+			
+		/**
+		 * Add crossbrowser support for chartX and chartY
+		 * @param {Object} e The event object in standard browsers
+		 */
+		function normalizeMouseEvent(e) {
+			
+			// common IE normalizing
+			e = e || win.event;
+			if (!e.target) {
+				e.target = e.srcElement;
+			}
+			
+			// in certain cases, get mouse position
+			if (e.type != 'mousemove' || win.opera) { // only Opera needs position on mouse move, see below
+				position = getPosition(container);
+			}
+
+			// chartX and chartY
+			if (isIE) { // IE including IE9 that has chartX but in a different meaning
+				e.chartX = e.x;
+				e.chartY = e.y;
+			} else {
+				if (e.layerX === UNDEFINED) { // Opera
+					e.chartX = e.pageX - position.x;
+					e.chartY = e.pageY - position.y;
+				} else {
+					e.chartX = e.layerX;
+					e.chartY = e.layerY;
+				}
+			}
+			
+			return e;
+		}
+		
+		/**
+		 * Get the click position in terms of axis values.
+		 * 
+		 * @param {Object} e A mouse event
+		 */
+		function getMouseCoordinates(e) {
+			var coordinates = {
+				xAxis: [],
+				yAxis: []
+			}; 
+			each (axes, function(axis, i) {
+				var translate = axis.translate,
+					isXAxis = axis.isXAxis,
+					isHorizontal = inverted ? !isXAxis : isXAxis;
+					
+				coordinates[isXAxis ? 'xAxis' : 'yAxis'].push({
+					axis: axis,
+					value: translate(
+						isHorizontal ? 
+							e.chartX - plotLeft  : 
+							plotHeight - e.chartY + plotTop ,
+						true
+					)								
+				});
+			});
+			return coordinates;
+		}
+		
+		/**
+		 * With line type charts with a single tracker, get the point closest to the mouse
+		 */
+		function onmousemove (e) {
+			var point,
+				hoverPoint = chart.hoverPoint,
+				hoverSeries = chart.hoverSeries;
+				
+			if (hoverSeries && hoverSeries.tracker) { // only use for line-type series with common tracker
+		
+				// get the point
+				point = hoverSeries.tooltipPoints[
+					inverted ? 
+						e.chartY : 
+						e.chartX - plotLeft // wtf?
+				];
+				
+				// a new point is hovered, refresh the tooltip
+				if (point && point != hoverPoint) {
+					
+					// trigger the events
+					point.onMouseOver();
+					
+				}				
+			}
+		}
+				
+		
+		
+		/**
+		 * Reset the tracking by hiding the tooltip, the hover series state and the hover point
+		 */
+		function resetTracker() {
+			var hoverSeries = chart.hoverSeries,
+				hoverPoint = chart.hoverPoint;				
+
+			if (hoverPoint) {
+				hoverPoint.onMouseOut();
+			}
+			if (hoverSeries) {
+				hoverSeries.onMouseOut();
+			}
+			if (tooltip) {
+				tooltip.hide();
+			}
+			
+		}
+		
+		/**
+		 * Mouse up or outside the plot area
+		 */
+		function drop() {
+			if (selectionMarker) {
+				var selectionData = {
+						xAxis: [],
+						yAxis: []
+					},
+					selectionBox = selectionMarker.getBBox(),
+					selectionLeft = selectionBox.x - plotLeft,
+					selectionTop = selectionBox.y - plotTop;
+				
+					
+				// a selection has been made
+				if (hasDragged) {
+					
+					// record each axis' min and max
+					each (axes, function(axis, i) {
+						var translate = axis.translate,
+							isXAxis = axis.isXAxis,
+							isHorizontal = inverted ? !isXAxis : isXAxis,
+							selectionMin = translate(
+								isHorizontal ? 
+									selectionLeft : 
