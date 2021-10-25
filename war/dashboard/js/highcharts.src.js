@@ -4836,3 +4836,417 @@ function Chart (options, callback) {
 							selectionMin = translate(
 								isHorizontal ? 
 									selectionLeft : 
+									plotHeight - selectionTop - selectionBox.height, 
+								true
+							),
+							selectionMax = translate(
+								isHorizontal ? 
+									selectionLeft + selectionBox.width : 
+									plotHeight - selectionTop, 
+								true
+							);
+								
+							selectionData[isXAxis ? 'xAxis' : 'yAxis'].push({
+								axis: axis,
+								min: mathMin(selectionMin, selectionMax), // for reversed axes
+								max: mathMax(selectionMin, selectionMax)
+							});
+							
+						});
+					fireEvent(chart, 'selection', selectionData, zoom);
+
+				}
+				selectionMarker = selectionMarker.destroy();
+			}
+			
+			chart.mouseIsDown = mouseIsDown = hasDragged = false;
+
+		}
+		
+		/**
+		 * Set the JS events on the container element
+		 */
+		function setDOMEvents () {
+			var lastWasOutsidePlot = true;
+			
+			container.onmousedown = function(e) {
+				e = normalizeMouseEvent(e);
+				
+				// record the start position
+				if (e.preventDefault) {
+					e.preventDefault();
+				}
+				chart.mouseIsDown = mouseIsDown = true;
+				mouseDownX = e.chartX;
+				mouseDownY = e.chartY;
+					
+				
+				// make a selection
+				if (hasCartesianSeries && (zoomX || zoomY)) {
+					if (!selectionMarker) {
+						selectionMarker = renderer.rect(
+							plotLeft,
+							plotTop,
+							zoomHor ? 1 : plotWidth,
+							zoomVert ? 1 : plotHeight,
+							0
+						)
+						.attr({
+							fill: 'rgba(69,114,167,0.25)',
+							zIndex: 7
+						})
+						.add();
+					}
+				}
+				
+			};
+						
+			// Use native browser event for this one. It's faster, and MooTools
+			// doesn't use clientX and clientY.
+			container.onmousemove = function(e) {
+				e = normalizeMouseEvent(e);
+				e.returnValue = false;
+				
+				var chartX = e.chartX,
+					chartY = e.chartY,
+					isOutsidePlot = !isInsidePlot(chartX - plotLeft, chartY - plotTop);
+				
+				if (mouseIsDown) { // make selection
+					
+					// determine if the mouse has moved more than 10px
+					hasDragged = Math.sqrt(
+						Math.pow(mouseDownX - chartX, 2) + 
+						Math.pow(mouseDownY - chartY, 2)
+					) > 10;
+					
+					
+					// adjust the width of the selection marker
+					if (zoomHor) {
+						var xSize = chartX - mouseDownX;
+						selectionMarker.attr({
+							width: mathAbs(xSize),
+							x: (xSize > 0 ? 0 : xSize) + mouseDownX
+						});
+					}
+					// adjust the height of the selection marker
+					if (zoomVert) {
+						var ySize = chartY - mouseDownY;
+						selectionMarker.attr({
+							height: mathAbs(ySize),
+							y: (ySize > 0 ? 0 : ySize) + mouseDownY
+						});
+					}
+					
+					
+					
+					
+				} else if (!isOutsidePlot) {
+					// show the tooltip
+					onmousemove(e);
+				}
+				
+				// cancel on mouse outside
+				if (isOutsidePlot && !lastWasOutsidePlot) {
+					// reset the tracker					
+					resetTracker();
+					
+					// drop the selection if any and reset mouseIsDown and hasDragged
+					drop();
+				}	
+				
+				lastWasOutsidePlot = isOutsidePlot;
+				return false;
+			};
+			
+			container.onmouseup = function(e) {
+				drop();
+			};
+			
+			
+			
+			// MooTools 1.2.3 doesn't fire this in IE when using addEvent
+			container.onclick = function(e) {
+				var hoverPoint = chart.hoverPoint;
+				e = normalizeMouseEvent(e);
+				 
+				e.cancelBubble = true; // IE specific
+				
+				
+				if (!hasDragged) {
+					if (hoverPoint && attr(e.target, 'isTracker')) {
+						var plotX = hoverPoint.plotX,
+							plotY = hoverPoint.plotY;
+							
+						// add page position info
+						extend(hoverPoint, {
+							pageX: position.x + plotLeft + 
+								(inverted ? plotWidth - plotY : plotX),
+							pageY: position.y + plotTop + 
+								(inverted ? plotHeight - plotX : plotY)
+						});
+						
+						// the series click event
+						fireEvent(chart.hoverSeries || hoverPoint.series, 'click', extend(e, {
+							point: hoverPoint
+						}));
+						
+						// the point click event
+						hoverPoint.firePointEvent('click', e);
+					
+					} else { 
+						extend (e, getMouseCoordinates(e));
+						
+						// fire a click event in the chart
+						if (isInsidePlot(e.chartX - plotLeft, e.chartY - plotTop)) {
+							fireEvent(chart, 'click', e);
+						}
+					}
+					
+					
+				}
+				// reset mouseIsDown and hasDragged
+				hasDragged = false;
+			};
+			
+			 
+		}
+		
+		
+
+		
+		/**
+		 * Create the image map that listens for mouseovers
+		 */
+		function createTrackerGroup () {
+			chart.trackerGroup = trackerGroup = renderer.g('tracker');
+			
+			if (inverted) {
+				trackerGroup.attr({
+					width: chart.plotWidth,
+					height: chart.plotHeight
+				}).invert();
+			} 
+		
+			trackerGroup
+				.attr({ zIndex: 9 })
+				.translate(plotLeft, plotTop)
+				.add();	
+		}
+		
+		
+		// Run MouseTracker
+		createTrackerGroup();
+		if (options.enabled) {
+			chart.tooltip = tooltip = Tooltip(options);
+		}
+		
+		setDOMEvents();
+		
+		// set the fixed interval ticking for the smooth tooltip
+		tooltipInterval = setInterval(function() {
+			if (tooltipTick) {
+				tooltipTick();
+			}
+		}, 32);
+		
+		// expose properties
+		extend (this, {
+			zoomX: zoomX,
+			zoomY: zoomY,
+			resetTracker: resetTracker
+		});
+	}
+	
+	
+	
+	/**
+	 * The overview of the chart's series
+	 * @param {Object} chart
+	 */
+	var Legend = function(chart) {
+
+		var options = chart.options.legend;
+			
+		if (!options.enabled) {
+			return;
+		}
+		
+		var horizontal = options.layout == 'horizontal',
+			symbolWidth = options.symbolWidth,
+			symbolPadding = options.symbolPadding,
+			allItems = [],
+			style = options.style,
+			itemStyle = options.itemStyle,
+			itemHoverStyle = options.itemHoverStyle,
+			itemHiddenStyle = options.itemHiddenStyle,
+			padding = parseInt(style.padding, 10),
+			rightPadding = 20,
+			lineHeight = options.lineHeight || 16,
+			y = 18,
+			initialItemX = 4 + padding + symbolWidth + symbolPadding,
+			itemX,
+			itemY,
+			lastItemY,
+			box,
+			legendBorderWidth = options.borderWidth,
+			legendBackgroundColor = options.backgroundColor,
+			legendGroup,
+			offsetWidth,
+			widthOption = options.width,
+			boxWidth,
+			boxHeight,
+			series = chart.series,
+			reversedLegend = options.reversed;
+			
+			
+		
+		/**
+		 * Set the colors for the legend item
+		 * @param {Object} item A Series or Point instance
+		 * @param {Object} visible Dimmed or colored
+		 */
+		function colorizeItem(item, visible) {
+			var legendItem = item.legendItem,
+				legendLine = item.legendLine,
+				legendSymbol = item.legendSymbol,
+				hiddenColor = itemHiddenStyle.color,
+				textColor = visible ? options.itemStyle.color : hiddenColor,
+				symbolColor = visible ? item.color : hiddenColor;
+			if (legendItem) {
+				legendItem.css({ color: textColor });
+			}
+			if (legendLine) {
+				legendLine.attr({ stroke: symbolColor });
+			}
+			if (legendSymbol) {
+				legendSymbol.attr({ 
+					stroke: symbolColor,
+					fill: symbolColor
+				});
+			}
+		}
+		
+		/**
+		 * Position the legend item
+		 * @param {Object} item A Series or Point instance
+		 * @param {Object} visible Dimmed or colored
+		 */
+		function positionItem(item, itemX, itemY) {
+			var legendItem = item.legendItem,
+				legendLine = item.legendLine,
+				legendSymbol = item.legendSymbol,
+				checkbox = item.checkbox;
+			if (legendItem) {
+				legendItem.attr({ 
+					x: itemX,
+					y: itemY
+				});
+			}
+			if (legendLine) {
+				legendLine.translate(itemX, itemY - 4);
+			}
+			if (legendSymbol) {
+				legendSymbol
+					.translate(itemX, itemY);
+			}
+			if (checkbox) {
+				checkbox.x = itemX;
+				checkbox.y = itemY;
+			}
+		}
+		
+		/**
+		 * Destroy a single legend item
+		 * @param {Object} item The series or point
+		 */
+		function destroyItem(item) {
+			var i = allItems.length,				
+				checkbox = item.checkbox;
+				
+			// pull out from the array
+			while (i--) {
+				if (allItems[i] == item) {
+					allItems.splice(i, 1);
+					break;
+				}
+			}
+				
+			// destroy SVG elements
+			each (['legendItem', 'legendLine', 'legendSymbol'], function(key) {
+				if (item[key]) {
+					item[key].destroy();
+				}
+			});
+			
+			if (checkbox) {
+				discardElement(item.checkbox);
+			}
+			
+			
+		}
+		
+		
+		
+		/**
+		 * Render a single specific legend item
+		 * @param {Object} item A series or point
+		 */
+		function renderItem(item) {
+			var	bBox,
+				itemWidth,
+				legendSymbol,
+				simpleSymbol,
+				li = item.legendItem,
+				series = item.series || item;
+				
+			
+			if (!li) { // generate it once, later move it
+			
+				// let these series types use a simple symbol
+				simpleSymbol = /^(bar|pie|area|column)$/.test(series.type);
+				
+				// generate the list item text
+				item.legendItem = li = renderer.text(
+						options.labelFormatter.call(item),
+						0, 
+						0
+					)
+					.css(item.visible ? itemStyle : itemHiddenStyle)
+					.on('mouseover', function() {
+						item.setState(HOVER_STATE);
+						li.css(itemHoverStyle);
+					})
+					.on('mouseout', function() {
+						li.css(item.visible ? itemStyle : itemHiddenStyle);
+						item.setState();
+					})
+					.on('click', function(event) {
+						var strLegendItemClick = 'legendItemClick',
+							fnLegendItemClick = function() {
+								item.setVisible();
+							};
+						
+						// click the name or symbol
+						if (item.firePointEvent) { // point
+							item.firePointEvent (strLegendItemClick, null, fnLegendItemClick);
+						} else {
+							fireEvent (item, strLegendItemClick, null, fnLegendItemClick);
+						}
+					})
+					.attr({ zIndex: 2 })
+					.add(legendGroup);
+				
+				// draw the line
+				if (!simpleSymbol && item.options && item.options.lineWidth) {
+					item.legendLine = renderer.path([
+						M,
+						-symbolWidth - symbolPadding, 
+						0,
+						L, 
+						-symbolPadding, 
+						0
+					]).attr({
+						//stroke: color,
+						'stroke-width': item.options.lineWidth,
+						zIndex: 2
+					}).
