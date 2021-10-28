@@ -5650,3 +5650,441 @@ function Chart (options, callback) {
 			}), container);
 			
 			createElement('span', null, loadingOptions.labelStyle, loadingLayer);
+		}
+		
+		
+		// show it
+		if (!loadingShown) {
+			css(loadingLayer, { opacity: 0, display: '' });
+			loadingLayer.getElementsByTagName('span')[0].innerHTML = str || options.lang.loading;
+			animate(loadingLayer, {
+				opacity: loadingOptions.style.opacity
+			}, {
+				duration: loadingOptions.showDuration
+			});
+			loadingShown = true;
+		}
+	}
+	/**
+	 * Hide the loading layer
+	 */
+	function hideLoading() {
+		animate(loadingLayer, {
+			opacity: 0
+		}, {
+			duration: options.loading.hideDuration, 
+			complete: function() {
+				css(loadingLayer, { display: NONE });
+			}
+		});
+		loadingShown = false;
+	}
+	
+	/**
+	 * Get an axis, series or point object by id.
+	 * @param id {String} The id as given in the configuration options
+	 */
+	function get(id) {
+		var i,
+			j,
+			data;
+		
+		// search axes
+		for (i = 0; i < axes.length; i++) {
+			if (axes[i].options.id == id) {
+				return axes[i];
+			}
+		}
+		
+		// search series
+		for (i = 0; i < series.length; i++) {
+			if (series[i].options.id == id) {
+				return series[i];
+			}
+		}
+		
+		// search points
+		for (i = 0; i < series.length; i++) {
+			data = series[i].data;
+			for (j = 0; j < data.length; j++) {
+				if (data[j].id == id) {
+					return data[j];
+				}
+			}
+		}
+		return null;	
+	}
+	
+	/**
+	 * Update the chart's position after it has been moved, to match
+	 * the mouse positions with the chart
+	 */
+	/*function updatePosition() {
+		var container = doc.getElementById(containerId);
+		if (container) {
+			position = getPosition(container);
+		}
+	}*/
+	
+	/** 
+	 * Create the Axis instances based on the config options
+	 */
+	function getAxes() {
+		var xAxisOptions = options.xAxis || {},
+			yAxisOptions = options.yAxis || {},
+			axis;
+			
+		// make sure the options are arrays and add some members
+		xAxisOptions = splat(xAxisOptions);
+		each(xAxisOptions, function(axis, i) {
+			axis.index = i; 
+			axis.isX = true;
+		});
+		
+		yAxisOptions = splat(yAxisOptions);
+		each(yAxisOptions, function(axis, i) {
+			axis.index = i;
+		});
+		
+		// concatenate all axis options into one array
+		axes = xAxisOptions.concat(yAxisOptions);
+		
+		// loop the options and construct axis objects
+		chart.xAxis = [];
+		chart.yAxis = [];
+		axes = map (axes, function(axisOptions) {
+			axis = new Axis(chart, axisOptions);
+			chart[axis.isXAxis ? 'xAxis' : 'yAxis'].push(axis);
+			
+			return axis;
+		});
+		
+		adjustTickAmounts();	
+	}
+
+	
+	/**
+	 * Get the currently selected points from all series
+	 */
+	function getSelectedPoints() {
+		var points = [];
+		each(series, function(serie) {
+			points = points.concat( grep( serie.data, function(point) {
+				return point.selected;
+			}));
+		});
+		return points;
+	}
+	
+	/**
+	 * Get the currently selected series
+	 */
+	function getSelectedSeries() {
+		return grep (series, function (serie) {
+			return serie.selected;
+		});
+	}
+	
+	/**
+	 * Zoom out to 1:1
+	 */
+	zoomOut = function () {
+		fireEvent(chart, 'selection', { resetSelection: true }, zoom);
+		chart.toolbar.remove('zoom');
+
+	};
+	/**
+	 * Zoom into a given portion of the chart given by axis coordinates
+	 * @param {Object} event
+	 */
+	zoom = function (event) {
+		
+		// add button to reset selection
+		var lang = defaultOptions.lang;
+		chart.toolbar.add('zoom', lang.resetZoom, lang.resetZoomTitle, zoomOut);
+		
+		// if zoom is called with no arguments, reset the axes
+		if (!event || event.resetSelection) {
+			each(axes, function(axis) { 
+				axis.setExtremes(null, null, false);
+			});
+		}
+			
+		// else, zoom in on all axes
+		else {
+			each (event.xAxis.concat(event.yAxis), function(axisData) {
+				var axis = axisData.axis;
+					
+				// don't zoom more than maxZoom
+				if (chart.tracker[axis.isXAxis ? 'zoomX' : 'zoomY']) {
+					axis.setExtremes(axisData.min, axisData.max, false);
+				}
+			});
+		}
+		
+		// redraw chart
+		redraw();
+		
+	};
+	
+	/**
+	 * Function: (private) showTitle
+	 * 
+	 * Show the title and subtitle of the chart
+	 */
+	function showTitle () {
+		var title = options.title,
+			titleAlign = title.align,
+			subtitle = options.subtitle,
+			subtitleAlign = subtitle.align,
+			anchorMap = { // get the anchor relative to the alignment
+				left: 0,
+				center: chartWidth / 2,
+				right: chartWidth
+			};
+		
+			
+		// title
+		if (title && title.text) {
+			renderer.text(
+				title.text, 
+				anchorMap[titleAlign] + title.x,
+				title.y, 
+				title.style, 
+				0,
+				titleAlign
+			).attr({
+				'class': 'highcharts-title'
+			}).add();
+		}
+		
+		// subtitle
+		if (subtitle && subtitle.text) {
+			renderer.text(
+				subtitle.text, 
+				anchorMap[subtitleAlign] + subtitle.x,
+				subtitle.y, 
+				subtitle.style, 
+				0,
+				subtitleAlign
+			).attr({
+				'class': 'highcharts-subtitle'
+			}).add();
+		}
+	}
+
+	/**
+	 * Break down alignment options like align, verticalAlign, x, y, 
+	 * width and height to x and y relative to the chart.
+	 * 
+	 * @param {Object} alignmentOptions
+	 * 
+	 */
+	getAlignment = function(alignmentOptions) {
+		var align = alignmentOptions.align,
+			vAlign = alignmentOptions.verticalAlign,
+			optionsX = alignmentOptions.x || 0,
+			optionsY = alignmentOptions.y || 0,
+			ret = {
+				x: optionsX || 0, // default: left align
+				y: optionsY || 0 // default: top align
+			};
+		// align
+		if (/^(right|center)$/.test(align)) {
+			ret.x = (chartWidth - alignmentOptions.width) /
+				{ right: 1, center: 2 }[align] +
+				optionsX;			
+		}
+		// vertical align
+		if (/^(bottom|middle)$/.test(vAlign)) {
+			ret.y = (chartHeight - alignmentOptions.height) /
+				{ bottom: 1, middle: 2 }[vAlign] +
+				optionsY;			
+		}
+		
+		
+		return ret;
+	};
+	
+	/**
+	 * Get the containing element, determine the size and create the inner container
+	 * div to hold the chart
+	 */
+	function getContainer() {
+		renderTo = optionsChart.renderTo;
+		containerId = PREFIX + idCounter++;
+	
+		if (typeof renderTo == 'string') {
+			renderTo = doc.getElementById(renderTo);
+		}
+	
+		// remove previous chart
+		renderTo.innerHTML = '';
+		
+		// If the container doesn't have an offsetWidth, it has or is a child of a node
+		// that has display:none. We need to temporarily move it out to a visible
+		// state to determine the size, else the legend and tooltips won't render
+		// properly 
+		if (!renderTo.offsetWidth) {
+			renderToClone = renderTo.cloneNode(0);
+			css(renderToClone, {
+				position: ABSOLUTE,
+				top: '-9999px',
+				display: ''
+			});
+			doc.body.appendChild(renderToClone);
+		}
+		
+		// get the width and height
+		var renderToOffsetHeight = (renderToClone || renderTo).offsetHeight;
+		chart.chartWidth = chartWidth = optionsChart.width || (renderToClone || renderTo).offsetWidth || 600;
+		chart.chartHeight = chartHeight = optionsChart.height || 
+			// the offsetHeight of an empty container is 0 in standard browsers, but 19 in IE7:
+			(renderToOffsetHeight > plotTop + marginBottom ? renderToOffsetHeight : 0) || 
+			400;
+			
+		
+		chart.plotWidth = plotWidth = chartWidth - plotLeft - marginRight;
+		chart.plotHeight = plotHeight = chartHeight - plotTop - marginBottom;
+	
+		chart.plotLeft = plotLeft;
+		chart.plotTop = plotTop;
+		
+		// create the inner container
+		chart.container = container = createElement(DIV, {
+				className: 'highcharts-container' + 
+					(optionsChart.className ? ' '+ optionsChart.className : ''),
+				id: containerId
+			}, extend({
+				position: RELATIVE,
+				overflow: HIDDEN,
+				width: chartWidth + PX,
+				height: chartHeight + PX,
+				textAlign: 'left'
+			}, optionsChart.style),
+			renderToClone || renderTo
+		);
+		
+		chart.renderer = renderer = 
+			optionsChart.renderer == 'SVG' ? // force SVG, used for SVG export
+				new SVGRenderer(container, chartWidth, chartHeight) : 
+				new Renderer(container, chartWidth, chartHeight);
+	}
+	/**
+	 * Render all graphics for the chart
+	 */
+	function render () {
+		
+		var mgn, 
+			//div, 
+			//i, 
+			labels = options.labels, 
+			credits = options.credits,
+			chartBorderWidth = optionsChart.borderWidth || 0,
+			chartBackgroundColor = optionsChart.backgroundColor,
+			plotBackgroundColor = optionsChart.plotBackgroundColor,
+			plotBackgroundImage = optionsChart.plotBackgroundImage;
+		
+		
+		// Chart area
+		mgn = 2 * chartBorderWidth + (optionsChart.shadow ? 8 : 0);
+			
+		if (chartBorderWidth || chartBackgroundColor) {
+			renderer.rect(mgn / 2, mgn / 2, chartWidth - mgn, chartHeight - mgn, 
+					optionsChart.borderRadius, chartBorderWidth).
+				attr({ 
+					stroke: optionsChart.borderColor,
+					'stroke-width': chartBorderWidth,
+					fill: chartBackgroundColor || NONE
+				}).
+				add().
+				shadow(optionsChart.shadow);
+		}
+		
+		
+		// Plot background
+		if (plotBackgroundColor) {
+			renderer.rect(plotLeft, plotTop, plotWidth,	plotHeight,	0)
+				.attr({
+					fill: plotBackgroundColor
+				})
+				.add()
+				.shadow(optionsChart.plotShadow);
+		}
+		if (plotBackgroundImage) {
+			renderer.image(plotBackgroundImage, plotLeft, plotTop, plotWidth, plotHeight)
+				.add();
+		}
+		
+		// Plot area border
+		if (optionsChart.plotBorderWidth) {
+			renderer.rect(plotLeft, plotTop, plotWidth, plotHeight, 0, optionsChart.plotBorderWidth).
+				attr({
+					stroke: optionsChart.plotBorderColor,
+					'stroke-width': optionsChart.plotBorderWidth,
+					zIndex: 4
+				}).add();
+		}
+						
+		// Axes
+		if (hasCartesianSeries) {
+			each(axes, function(axis) { 
+				axis.render();
+			});
+		}
+	
+		// Title
+		showTitle();
+		
+		
+		// Labels
+		if (labels.items) {
+			each (labels.items, function () {
+				var style = extend (labels.style, this.style),
+					x = parseInt(style.left, 10) + plotLeft,
+					y = parseInt(style.top, 10) + plotTop + 12;
+				
+				// delete to prevent rewriting in IE
+				delete style.left;
+				delete style.top;
+				
+				renderer.text(
+					this.html,
+					x,
+					y,
+					style
+				)
+				.attr({ zIndex: 2 })
+				.add();
+					
+			});
+		}
+
+		// The series
+		each (series, function(serie) {
+			serie.render();
+		});
+		
+		// Legend
+		legend = chart.legend = new Legend(chart);
+
+		
+		// Toolbar (don't redraw)
+		if (!chart.toolbar) {
+			chart.toolbar = Toolbar(chart);
+		}
+		
+		// Credits
+		if (credits.enabled && !chart.credits) {
+			renderer.text(
+				credits.text,
+				chartWidth - 10,
+				chartHeight - 5,
+				credits.style,
+				0,
+				'right'
+			)
+			.on('click', function() {
+				location.href = credits.href;
+			})
+			.attr({ zIndex: 8 })
