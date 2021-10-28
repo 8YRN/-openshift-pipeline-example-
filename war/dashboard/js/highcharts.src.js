@@ -5250,3 +5250,403 @@ function Chart (options, callback) {
 						'stroke-width': item.options.lineWidth,
 						zIndex: 2
 					}).
+					add(legendGroup);
+				}
+					
+				// draw a simple symbol
+				if (simpleSymbol) { // bar|pie|area|column
+					//legendLayer.drawRect(
+					legendSymbol = renderer.rect(
+						-symbolWidth - symbolPadding,
+						-11,
+						symbolWidth,
+						12,
+						2
+					).attr({
+						'stroke-width': 0,
+						zIndex: 3
+					}).add(legendGroup);
+				}
+					
+				// draw the marker
+				else if (item.options && item.options.marker && item.options.marker.enabled) {
+					legendSymbol = renderer.symbol(
+						item.symbol,
+						-symbolWidth / 2 - symbolPadding, 
+						-4, 
+						item.options.marker.radius
+					)
+					.attr(item.pointAttr[NORMAL_STATE])
+					.attr({ zIndex: 3 })
+					.add(legendGroup);
+				}
+				item.legendSymbol = legendSymbol;
+					
+				// colorize the items
+				colorizeItem(item, item.visible);
+				
+				
+				// add the HTML checkbox on top
+				if (item.options && item.options.showCheckbox) {
+					item.checkbox = createElement('input', {
+						type: 'checkbox',
+						checked: item.selected,
+						defaultChecked: item.selected // required by IE7						
+					}, options.itemCheckboxStyle, container);
+					
+					addEvent(item.checkbox, 'click', function(event) {
+						var target = event.target;
+						fireEvent (item, 'checkboxClick', { 
+								checked: target.checked 
+							}, 
+							function() {
+								item.select();
+							}
+						);
+					});
+				}
+			}
+			
+			
+			
+			// position the newly generated or reordered items
+			positionItem(item, itemX, itemY);
+			
+			// calculate the positions for the next line
+			bBox = li.getBBox();
+			lastItemY = itemY;
+			
+			item.legendItemWidth = itemWidth = 
+				options.itemWidth || symbolWidth + symbolPadding + bBox.width + rightPadding;
+			if (horizontal) {
+				itemX += itemWidth;
+				offsetWidth = widthOption || mathMax(itemX - initialItemX, offsetWidth);
+			
+				if (itemX - initialItemX + itemWidth > 
+						(widthOption || (chartWidth - 2 * padding - initialItemX))) { // new line
+					itemX = initialItemX;
+					itemY += lineHeight;
+				}
+				
+			} else {
+				itemY += lineHeight;
+				// the width of the widest item
+				offsetWidth = widthOption || mathMax(itemWidth, offsetWidth);			
+			}		
+			
+			// add it all to an array to use below
+			allItems.push(item);
+		}
+
+		/**
+		 * Render the legend. This method can be called both before and after
+		 * chart.render. If called after, it will only rearrange items instead
+		 * of creating new ones.
+		 */
+		function renderLegend() {
+			itemX = initialItemX;
+			itemY = y;
+			offsetWidth = 0;
+			lastItemY = 0;
+			
+			if (!legendGroup) {
+				legendGroup = renderer.g('legend')
+					.attr({ zIndex: 7 })
+					.add();
+			}
+			
+			
+			// add HTML for each series
+			if (reversedLegend) {
+				series.reverse();
+			}
+			each(series, function(serie) {
+				if (!serie.options.showInLegend) {
+					return;
+				}
+				
+				// use points or series for the legend item depending on legendType
+				var items = (serie.options.legendType == 'point') ?
+					serie.data : [serie];
+						
+				// render all items
+				each(items, renderItem);
+			});
+			if (reversedLegend) { // restore
+				series.reverse();
+			}
+			
+			
+			
+			// Draw the border
+			boxWidth = widthOption || offsetWidth;
+			boxHeight = lastItemY - y + lineHeight;
+			
+			if (legendBorderWidth || legendBackgroundColor) {
+				boxWidth += 2 * padding;
+				boxHeight += 2 * padding;
+				
+				if (!box) {
+					box = renderer.rect(
+						0, 
+						0,
+						boxWidth,
+						boxHeight,
+						options.borderRadius,
+						legendBorderWidth || 0
+					).attr({
+						stroke: options.borderColor,
+						'stroke-width': legendBorderWidth || 0,
+						fill: legendBackgroundColor || NONE
+					})
+					.add(legendGroup)
+					.shadow(options.shadow);
+				
+				} else {
+					box.attr({ 
+						height: boxHeight,
+						width: boxWidth
+					});
+				}
+			}
+			
+			// 1.x compatibility: positioning based on style
+			var props = ['left', 'right', 'top', 'bottom'],
+				prop,
+				i = 4;
+			while(i--) {
+				prop = props[i];
+				if (style[prop] && style[prop] != 'auto') {
+					options[i < 2 ? 'align' : 'verticalAlign'] = prop;
+					options[i < 2 ? 'x' : 'y'] = parseInt(style[prop], 10) * (i % 2 ? -1 : 1);
+				}
+			}
+
+			
+			var boxPos = getAlignment(extend({
+				width: boxWidth,
+				height: boxHeight
+			}, options));
+			legendGroup.translate(boxPos.x, boxPos.y);
+			
+			// Position the checkboxes after the width is determined 
+			each(allItems, function(item) {
+				var checkbox = item.checkbox;
+				if (checkbox) {
+					css(checkbox, {
+						left: (boxPos.x + item.legendItemWidth + checkbox.x - 40) +PX,
+						top: (boxPos.y + checkbox.y - 11) + PX 
+					});
+				}
+			});
+			
+		}
+		
+		// run legend
+		renderLegend();
+		
+		// expose 
+		return {
+			colorizeItem: colorizeItem,
+			destroyItem: destroyItem,
+			renderLegend: renderLegend
+		};
+	};
+	
+	
+	
+		
+	
+
+	/** 
+	 * Initialize an individual series, called internally before render time
+	 */
+	function initSeries(options) {
+		var type = options.type || optionsChart.defaultSeriesType,
+			typeClass = seriesTypes[type],
+			serie,
+			hasRendered = chart.hasRendered;
+			
+		// an inverted chart can't take a column series and vice versa
+		if (hasRendered) {
+			if (inverted && type == 'column') {
+				typeClass = seriesTypes.bar;
+			} else if (!inverted && type == 'bar') {
+				typeClass = seriesTypes.column;
+			}
+		}
+		
+		serie = new typeClass();
+		
+		serie.init(chart, options);
+		
+		// set internal chart properties
+		if (!hasRendered && serie.inverted) {
+			inverted = true;
+		}
+		if (serie.isCartesian) {
+			hasCartesianSeries = serie.isCartesian;
+		}
+		
+		series.push(serie);
+		
+		return serie;
+	}
+
+	/**
+	 * Add a series dynamically after  time
+	 * 
+	 * @param {Object} options The config options
+	 * @param {Boolean} redraw Whether to redraw the chart after adding. Defaults to true.
+	 * 
+	 * @return {Object} series The newly created series object
+	 */
+	function addSeries(options, redraw) {
+		var series;
+		
+		redraw = pick(redraw, true); // defaults to true
+		
+		fireEvent(chart, 'addSeries', { options: options }, function() {
+			series = initSeries(options);
+			series.isDirty = true;
+			
+			chart.isDirty = true; // the series array is out of sync with the display
+			if (redraw) {
+				chart.redraw();
+			}
+		});
+		
+		return series;
+	}
+	
+	/**
+	 * Check whether a given point is within the plot area
+	 * 
+	 * @param {Number} x Pixel x relative to the coordinateSystem
+	 * @param {Number} y Pixel y relative to the coordinateSystem
+	 */
+	isInsidePlot = function(x, y) {
+		var left = 0,
+			top = 0;
+		return x >= left &&
+			x <= left + plotWidth &&
+			y >= top &&
+			y <= top + plotHeight;
+	};
+		
+	/**
+	 * Adjust all axes tick amounts
+	 */
+	function adjustTickAmounts() {
+		if (optionsChart.alignTicks !== false) {
+			each (axes, function(axis) {
+				axis.adjustTickAmount();
+			});
+		}
+	}
+
+	/**
+	 * Redraw legend, axes or series based on updated data
+	 */
+	function redraw() {
+		var redrawLegend = chart.isDirty,
+			hasStackedSeries,
+			seriesLength = series.length,
+			i = seriesLength,
+			serie;
+		
+		// link stacked series
+		while (i--) {
+			serie = series[i];
+			if (serie.isDirty && serie.options.stacking) {
+				hasStackedSeries = true;
+				break;
+			}
+		}
+		if (hasStackedSeries) { // mark others as dirty
+			i = seriesLength;
+			while (i--) {
+				serie = series[i];
+				if (serie.options.stacking) {
+					serie.isDirty = true;
+				}
+			}
+		}
+			
+		// handle updated data in the series		
+		each (series, function(serie) {
+			if (serie.isDirty) { // prepare the data so axis can read it
+				serie.cleanData();
+				serie.getSegments();
+				
+				if (serie.options.legendType == 'point') {
+					redrawLegend = true;
+				}
+			}
+		});
+		
+		// reset maxTicks
+		maxTicks = null;
+		
+		if (hasCartesianSeries) {
+			// set axes scales
+			each (axes, function(axis) {
+				axis.setScale();
+			});
+			adjustTickAmounts();
+	
+			// redraw axes
+			each (axes, function(axis) {
+				if (axis.isDirty) { axis.redraw(); }
+			});
+		}
+		
+		// redraw affected series
+		each (series, function(serie) {
+			if (serie.isDirty && serie.visible) { 
+				serie.redraw();
+			}
+		});
+		
+		// handle added or removed series 
+		if (redrawLegend && legend.renderLegend) { // series or pie points are added or removed
+			// draw legend graphics
+			legend.renderLegend();
+			
+			chart.isDirty = false;
+		}
+
+		// hide tooltip and hover states
+		if (tracker && tracker.resetTracker) {
+			tracker.resetTracker();
+		}			
+		
+		
+		// fire the event
+		fireEvent(chart, 'redraw');
+	}
+	
+	
+	
+	/**
+	 * Dim the chart and show a loading text or symbol
+	 * 
+	 * @param {String} str An optional text to show in the loading label instead of the default one
+	 */
+	function showLoading(str) {
+		var loadingOptions = options.loading;
+
+		// create the layer at the first call
+		if (!loadingLayer) {
+			loadingLayer = createElement(DIV, {
+				className: 'highcharts-loading'
+			}, extend(loadingOptions.style, {
+				left: plotLeft + PX,
+				top: plotTop + PX,
+				width: plotWidth + PX,
+				height: plotHeight + PX,
+				zIndex: 10,
+				display: NONE
+			}), container);
+			
+			createElement('span', null, loadingOptions.labelStyle, loadingLayer);
