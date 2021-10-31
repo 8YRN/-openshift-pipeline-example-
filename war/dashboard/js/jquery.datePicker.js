@@ -258,3 +258,389 @@
 										this.blur();
 										return false;
 									}
+								);
+						$this.after(controller.button);
+					}
+					
+					if (!alreadyExists && $this.is(':text')) {
+						$this
+							.bind(
+								'dateSelected',
+								function(e, selectedDate, $td)
+								{
+									this.value = selectedDate.asString();
+								}
+							).bind(
+								'change',
+								function()
+								{
+									var d = Date.fromString(this.value);
+									if (d) {
+										controller.setSelected(d, true, true);
+									}
+								}
+							);
+						if (s.clickInput) {
+							$this.bind(
+								'click',
+								function()
+								{
+									$this.dpDisplay();
+								}
+							);
+						}
+						var d = Date.fromString(this.value);
+						if (this.value != '' && d) {
+							controller.setSelected(d, true, true);
+						}
+					}
+					
+					$this.addClass('dp-applied');
+					
+				}
+			)
+		},
+/**
+ * Disables or enables this date picker
+ *
+ * @param Boolean s Whether to disable (true) or enable (false) this datePicker
+ * @type jQuery
+ * @name dpSetDisabled
+ * @cat plugins/datePicker
+ * @author Kelvin Luck (http://www.kelvinluck.com/)
+ *
+ * @example $('.date-picker').datePicker();
+ * $('.date-picker').dpSetDisabled(true);
+ * @desc Prevents this date picker from displaying and adds a class of dp-disabled to it (and it's associated button if it has one) for styling purposes. If the matched element is an input field then it will also set the disabled attribute to stop people directly editing the field.
+ **/
+		dpSetDisabled : function(s)
+		{
+			return _w.call(this, 'setDisabled', s);
+		},
+/**
+ * Updates the first selectable date for any date pickers on any matched elements.
+ *
+ * @param String d A string representing the first selectable date (formatted according to Date.format).
+ * @type jQuery
+ * @name dpSetStartDate
+ * @cat plugins/datePicker
+ * @author Kelvin Luck (http://www.kelvinluck.com/)
+ *
+ * @example $('.date-picker').datePicker();
+ * $('.date-picker').dpSetStartDate('01/01/2000');
+ * @desc Creates a date picker associated with all elements with a class of "date-picker" then sets the first selectable date for each of these to the first day of the millenium.
+ **/
+		dpSetStartDate : function(d)
+		{
+			return _w.call(this, 'setStartDate', d);
+		},
+/**
+ * Updates the last selectable date for any date pickers on any matched elements.
+ *
+ * @param String d A string representing the last selectable date (formatted according to Date.format).
+ * @type jQuery
+ * @name dpSetEndDate
+ * @cat plugins/datePicker
+ * @author Kelvin Luck (http://www.kelvinluck.com/)
+ *
+ * @example $('.date-picker').datePicker();
+ * $('.date-picker').dpSetEndDate('01/01/2010');
+ * @desc Creates a date picker associated with all elements with a class of "date-picker" then sets the last selectable date for each of these to the first Janurary 2010.
+ **/
+		dpSetEndDate : function(d)
+		{
+			return _w.call(this, 'setEndDate', d);
+		},
+/**
+ * Gets a list of Dates currently selected by this datePicker. This will be an empty array if no dates are currently selected or NULL if there is no datePicker associated with the matched element.
+ *
+ * @type Array
+ * @name dpGetSelected
+ * @cat plugins/datePicker
+ * @author Kelvin Luck (http://www.kelvinluck.com/)
+ *
+ * @example $('.date-picker').datePicker();
+ * alert($('.date-picker').dpGetSelected());
+ * @desc Will alert an empty array (as nothing is selected yet)
+ **/
+		dpGetSelected : function()
+		{
+			var c = _getController(this[0]);
+			if (c) {
+				return c.getSelected();
+			}
+			return null;
+		},
+/**
+ * Selects or deselects a date on any matched element's date pickers. Deselcting is only useful on date pickers where selectMultiple==true. Selecting will only work if the passed date is within the startDate and endDate boundries for a given date picker.
+ *
+ * @param String d A string representing the date you want to select (formatted according to Date.format).
+ * @param Boolean v Whether you want to select (true) or deselect (false) this date. Optional - default = true.
+ * @param Boolean m Whether you want the date picker to open up on the month of this date when it is next opened. Optional - default = true.
+ * @type jQuery
+ * @name dpSetSelected
+ * @cat plugins/datePicker
+ * @author Kelvin Luck (http://www.kelvinluck.com/)
+ *
+ * @example $('.date-picker').datePicker();
+ * $('.date-picker').dpSetSelected('01/01/2010');
+ * @desc Creates a date picker associated with all elements with a class of "date-picker" then sets the selected date on these date pickers to the first Janurary 2010. When the date picker is next opened it will display Janurary 2010.
+ **/
+		dpSetSelected : function(d, v, m)
+		{
+			if (v == undefined) v=true;
+			if (m == undefined) m=true;
+			return _w.call(this, 'setSelected', Date.fromString(d), v, m);
+		},
+/**
+ * Sets the month that will be displayed when the date picker is next opened. If the passed month is before startDate then the month containing startDate will be displayed instead. If the passed month is after endDate then the month containing the endDate will be displayed instead.
+ *
+ * @param Number m The month you want the date picker to display. Optional - defaults to the currently displayed month.
+ * @param Number y The year you want the date picker to display. Optional - defaults to the currently displayed year.
+ * @type jQuery
+ * @name dpSetDisplayedMonth
+ * @cat plugins/datePicker
+ * @author Kelvin Luck (http://www.kelvinluck.com/)
+ *
+ * @example $('.date-picker').datePicker();
+ * $('.date-picker').dpSetDisplayedMonth(10, 2008);
+ * @desc Creates a date picker associated with all elements with a class of "date-picker" then sets the selected date on these date pickers to the first Janurary 2010. When the date picker is next opened it will display Janurary 2010.
+ **/
+		dpSetDisplayedMonth : function(m, y)
+		{
+			return _w.call(this, 'setDisplayedMonth', Number(m), Number(y));
+		},
+/**
+ * Displays the date picker associated with the matched elements. Since only one date picker can be displayed at once then the date picker associated with the last matched element will be the one that is displayed.
+ *
+ * @param HTMLElement e An element that you want the date picker to pop up relative in position to. Optional - default behaviour is to pop up next to the element associated with this date picker.
+ * @type jQuery
+ * @name dpDisplay
+ * @cat plugins/datePicker
+ * @author Kelvin Luck (http://www.kelvinluck.com/)
+ *
+ * @example $('#date-picker').datePicker();
+ * $('#date-picker').dpDisplay();
+ * @desc Creates a date picker associated with the element with an id of date-picker and then causes it to pop up.
+ **/
+		dpDisplay : function(e)
+		{
+			return _w.call(this, 'display', e);
+		},
+/**
+ * Sets a function or array of functions that is called when each TD of the date picker popup is rendered to the page
+ *
+ * @param (Function|Array) a A function or an array of functions that are called when each td is rendered. Each function will receive four arguments; a jquery object wrapping the created TD, a Date object containing the date this TD represents, a number giving the currently rendered month and a number giving the currently rendered year.
+ * @type jQuery
+ * @name dpSetRenderCallback
+ * @cat plugins/datePicker
+ * @author Kelvin Luck (http://www.kelvinluck.com/)
+ *
+ * @example $('#date-picker').datePicker();
+ * $('#date-picker').dpSetRenderCallback(function($td, thisDate, month, year)
+ * {
+ * 	// do stuff as each td is rendered dependant on the date in the td and the displayed month and year
+ * });
+ * @desc Creates a date picker associated with the element with an id of date-picker and then creates a function which is called as each td is rendered when this date picker is displayed.
+ **/
+		dpSetRenderCallback : function(a)
+		{
+			return _w.call(this, 'setRenderCallback', a);
+		},
+/**
+ * Sets the position that the datePicker will pop up (relative to it's associated element)
+ *
+ * @param Number v The vertical alignment of the created date picker to it's associated element. Possible values are $.dpConst.POS_TOP and $.dpConst.POS_BOTTOM
+ * @param Number h The horizontal alignment of the created date picker to it's associated element. Possible values are $.dpConst.POS_LEFT and $.dpConst.POS_RIGHT
+ * @type jQuery
+ * @name dpSetPosition
+ * @cat plugins/datePicker
+ * @author Kelvin Luck (http://www.kelvinluck.com/)
+ *
+ * @example $('#date-picker').datePicker();
+ * $('#date-picker').dpSetPosition($.dpConst.POS_BOTTOM, $.dpConst.POS_RIGHT);
+ * @desc Creates a date picker associated with the element with an id of date-picker and makes it so that when this date picker pops up it will be bottom and right aligned to the #date-picker element.
+ **/
+		dpSetPosition : function(v, h)
+		{
+			return _w.call(this, 'setPosition', v, h);
+		},
+/**
+ * Sets the offset that the popped up date picker will have from it's default position relative to it's associated element (as set by dpSetPosition)
+ *
+ * @param Number v The vertical offset of the created date picker.
+ * @param Number h The horizontal offset of the created date picker.
+ * @type jQuery
+ * @name dpSetOffset
+ * @cat plugins/datePicker
+ * @author Kelvin Luck (http://www.kelvinluck.com/)
+ *
+ * @example $('#date-picker').datePicker();
+ * $('#date-picker').dpSetOffset(-20, 200);
+ * @desc Creates a date picker associated with the element with an id of date-picker and makes it so that when this date picker pops up it will be 20 pixels above and 200 pixels to the right of it's default position.
+ **/
+		dpSetOffset : function(v, h)
+		{
+			return _w.call(this, 'setOffset', v, h);
+		},
+/**
+ * Closes the open date picker associated with this element.
+ *
+ * @type jQuery
+ * @name dpClose
+ * @cat plugins/datePicker
+ * @author Kelvin Luck (http://www.kelvinluck.com/)
+ *
+ * @example $('.date-pick')
+ *		.datePicker()
+ *		.bind(
+ *			'focus',
+ *			function()
+ *			{
+ *				$(this).dpDisplay();
+ *			}
+ *		).bind(
+ *			'blur',
+ *			function()
+ *			{
+ *				$(this).dpClose();
+ *			}
+ *		);
+ * @desc Creates a date picker and makes it appear when the relevant element is focused and disappear when it is blurred.
+ **/
+		dpClose : function()
+		{
+			return _w.call(this, '_closeCalendar', false, this[0]);
+		},
+		// private function called on unload to clean up any expandos etc and prevent memory links...
+		_dpDestroy : function()
+		{
+			// TODO - implement this?
+		}
+	});
+	
+	// private internal function to cut down on the amount of code needed where we forward
+	// dp* methods on the jQuery object on to the relevant DatePicker controllers...
+	var _w = function(f, a1, a2, a3)
+	{
+		return this.each(
+			function()
+			{
+				var c = _getController(this);
+				if (c) {
+					c[f](a1, a2, a3);
+				}
+			}
+		);
+	};
+	
+	function DatePicker(ele)
+	{
+		this.ele = ele;
+		
+		// initial values...
+		this.displayedMonth		=	null;
+		this.displayedYear		=	null;
+		this.startDate			=	null;
+		this.endDate			=	null;
+		this.showYearNavigation	=	null;
+		this.closeOnSelect		=	null;
+		this.displayClose		=	null;
+		this.selectMultiple		=	null;
+		this.verticalPosition	=	null;
+		this.horizontalPosition	=	null;
+		this.verticalOffset		=	null;
+		this.horizontalOffset	=	null;
+		this.button				=	null;
+		this.renderCallback		=	[];
+		this.selectedDates		=	{};
+		this.inline				=	null;
+		this.context			=	'#dp-popup';
+	};
+	$.extend(
+		DatePicker.prototype,
+		{	
+			init : function(s)
+			{
+				this.setStartDate(s.startDate);
+				this.setEndDate(s.endDate);
+				this.setDisplayedMonth(Number(s.month), Number(s.year));
+				this.setRenderCallback(s.renderCallback);
+				this.showYearNavigation = s.showYearNavigation;
+				this.closeOnSelect = s.closeOnSelect;
+				this.displayClose = s.displayClose;
+				this.selectMultiple = s.selectMultiple;
+				this.verticalPosition = s.verticalPosition;
+				this.horizontalPosition = s.horizontalPosition;
+				this.hoverClass = s.hoverClass;
+				this.setOffset(s.verticalOffset, s.horizontalOffset);
+				this.inline = s.inline;
+				if (this.inline) {
+					this.context = this.ele;
+					this.display();
+				}
+			},
+			setStartDate : function(d)
+			{
+				if (d) {
+					this.startDate = Date.fromString(d);
+				}
+				if (!this.startDate) {
+					this.startDate = (new Date()).zeroTime();
+				}
+				this.setDisplayedMonth(this.displayedMonth, this.displayedYear);
+			},
+			setEndDate : function(d)
+			{
+				if (d) {
+					this.endDate = Date.fromString(d);
+				}
+				if (!this.endDate) {
+					this.endDate = (new Date('12/31/2999')); // using the JS Date.parse function which expects mm/dd/yyyy
+				}
+				if (this.endDate.getTime() < this.startDate.getTime()) {
+					this.endDate = this.startDate;
+				}
+				this.setDisplayedMonth(this.displayedMonth, this.displayedYear);
+			},
+			setPosition : function(v, h)
+			{
+				this.verticalPosition = v;
+				this.horizontalPosition = h;
+			},
+			setOffset : function(v, h)
+			{
+				this.verticalOffset = parseInt(v) || 0;
+				this.horizontalOffset = parseInt(h) || 0;
+			},
+			setDisabled : function(s)
+			{
+				$e = $(this.ele);
+				$e[s ? 'addClass' : 'removeClass']('dp-disabled');
+				if (this.button) {
+					$but = $(this.button);
+					$but[s ? 'addClass' : 'removeClass']('dp-disabled');
+					$but.attr('title', s ? '' : $.dpText.TEXT_CHOOSE_DATE);
+				}
+				if ($e.is(':text')) {
+					$e.attr('disabled', s ? 'disabled' : '');
+				}
+			},
+			setDisplayedMonth : function(m, y)
+			{
+				if (this.startDate == undefined || this.endDate == undefined) {
+					return;
+				}
+				var s = new Date(this.startDate.getTime());
+				s.setDate(1);
+				var e = new Date(this.endDate.getTime());
+				e.setDate(1);
+				
+				var t;
+				if ((!m && !y) || (isNaN(m) && isNaN(y))) {
+					// no month or year passed - default to current month
+					t = new Date().zeroTime();
+					t.setDate(1);
+				} else if (isNaN(m)) {
+					// just year passed in - presume we want the displayedMonth
+					t = new Date(y, this.displayedMonth, 1);
