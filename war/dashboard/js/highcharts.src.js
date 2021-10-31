@@ -7344,3 +7344,441 @@ Series.prototype = {
 					chart.renderer.g(PREFIX +'data-labels')
 						.attr({ 
 							visibility: series.visible ? VISIBLE : HIDDEN,
+							zIndex: 4
+						})
+						.translate(chart.plotLeft, chart.plotTop)
+						.add();
+			}
+		
+			// determine the color
+			color = options.color;
+			if (color == 'auto') { // 1.0 backwards compatibility
+				color = null;	
+			}
+			options.style.color = pick(color, series.color);
+		
+			// make the labels for each point
+			each(data, function(point){
+				var plotX = pick(point.barX, point.plotX),
+					plotY = point.plotY,
+					tooltipPos = point.tooltipPos,
+					pointLabel = point.dataLabel;
+					
+				// destroy old data label after update
+				if (pointLabel) {
+					point.dataLabel = pointLabel.destroy();
+				}
+					
+				// get the string
+				str = options.formatter.call({
+					x: point.x,
+					y: point.y,
+					series: series,
+					point: point,
+					percentage: point.percentage,
+					total: point.total || point.stackTotal
+				});
+				x = (inverted ? chart.plotWidth - plotY : plotX) + options.x;
+				y = (inverted ? chart.plotHeight - plotX : plotY) + options.y;
+				
+				// special case for pies
+				if (tooltipPos) {
+					x = tooltipPos[0] + options.x;
+					y = tooltipPos[1] + options.y;
+				}
+				// in columns, align the string to the column
+				align = options.align;
+				if (seriesType == 'column') {
+					x += {
+						center: point.barW / 2,
+						right: point.barW
+					}[align] || 0;
+				}
+				
+				if (str) {
+					point.dataLabel = chart.renderer.text(
+						str, 
+						x, 
+						y, 
+						options.style, 
+						options.rotation, 
+						align
+					)
+					.attr({ 
+						zIndex: 1,
+						visibility: point.visible === false ? HIDDEN : 'inherit' // for pies
+					})
+					.add(dataLabelsGroup); // pies have point.group
+				}
+				
+				if (series.drawConnector) {
+					series.drawConnector(point);
+				}
+					
+			});
+		}
+	},
+	
+	/**
+	 * Draw the actual graph
+	 */
+	drawGraph: function(state) {
+		var series = this, 
+			options = series.options, 
+			chart = series.chart,
+			graph = series.graph,
+			graphPath = [],
+			fillColor,
+			area = series.area,
+			group = series.group,
+			color = options.lineColor || series.color, 
+			lineWidth = options.lineWidth,
+			segmentPath,
+			renderer = chart.renderer,
+			translatedThreshold = series.yAxis.getThreshold(options.threshold || 0),
+			useArea = /^area/.test(series.type),
+			singlePoints = [], // used in drawTracker
+			areaPath = [];
+			
+		
+		// divide into segments and build graph and area paths
+		each(series.segments, function(segment) {
+			if (segment.length > 1) {
+				segmentPath = [];
+				
+				// build the segment line
+				each(segment, function(point, i){
+					
+					// moveTo or lineTo
+					if (i < 2) {
+						segmentPath.push([M, L][i]);
+					}
+					
+					// step line?
+					if (i && options.step) {
+						var lastPoint = segment[i - 1];
+						segmentPath.push (
+							point.plotX, 
+							lastPoint.plotY						
+						);
+					}
+					
+					// normal line to next point
+					segmentPath.push(
+						point.plotX, 
+						point.plotY
+					);
+				});
+				graphPath = graphPath.concat(segmentPath);
+				
+				// build the area
+				if (useArea) {
+					var areaSegmentPath = [],
+						i,
+						segLength = segmentPath.length;
+					for (i = 0; i < segLength; i++) {
+						areaSegmentPath.push(segmentPath[i]);
+					}
+					if (options.stacking && series.type != 'areaspline') {
+						// follow stack back. Todo: implement areaspline
+						for (i = segment.length - 1; i >= 0; i--) {
+							areaSegmentPath.push(segment[i].plotX, segment[i].yBottom);
+						}
+					
+					} else { // follow zero line back
+						areaSegmentPath.push(
+							segment[segment.length - 1].plotX, 
+							translatedThreshold, 
+							segment[0].plotX, 
+							translatedThreshold,
+							'z'
+						);
+					}
+					areaPath = areaPath.concat(areaSegmentPath);
+				}
+			} else {
+				singlePoints.push(segment[0]);
+			}
+		});
+		
+		// used in drawTracker:
+		series.graphPath = graphPath;
+		series.singlePoints = singlePoints; 
+
+		
+			
+		// draw the area if area series or areaspline
+		if (useArea) {
+			fillColor = pick(
+				options.fillColor,
+				Color(series.color).setOpacity(options.fillOpacity || 0.75).get()
+			);
+			if (area) {
+				area.attr({ d: areaPath });
+			
+			} else {
+				// draw the area
+				series.area = series.chart.renderer.path(areaPath).
+					attr({
+						fill: fillColor
+					}).add(series.group);
+			}
+		}
+
+		// draw the graph
+		if (graph) {
+			graph.attr({ d: graphPath });
+		} else {
+			if (lineWidth) {
+				series.graph = renderer.path(graphPath).
+					attr({
+						'stroke': color,
+						'stroke-width': lineWidth + PX
+					}).add(group).shadow(options.shadow);
+			}
+		}
+		
+	},
+	
+	
+	/**
+	 * Render the graph and markers
+	 */
+	render: function() {
+		var series = this,
+			chart = series.chart,
+			group,
+			doAnimation = series.options.animation && series.animate,
+			renderer = chart.renderer;
+			
+		
+		// Add plot area clipping rectangle. If this is before chart.hasRendered,
+		// create one shared clipRect. 
+		if (!series.clipRect) {
+			series.clipRect = !chart.hasRendered && chart.clipRect ?
+				chart.clipRect : 
+			renderer.clipRect(0, 0, chart.plotSizeX, chart.plotSizeY);
+			if (!chart.clipRect) {
+				chart.clipRect = series.clipRect;
+			}
+		}
+		
+			
+		// the group
+		if (!series.group) {
+			group = series.group = renderer.g('series');
+				
+			if (chart.inverted) {
+				group.attr({
+					width: chart.plotWidth,
+					height: chart.plotHeight
+				}).invert();
+			} 
+			group.clip(series.clipRect)
+				.attr({ 
+					visibility: series.visible ? VISIBLE : HIDDEN,
+					zIndex: 3					
+				})
+				.translate(chart.plotLeft, chart.plotTop)
+				.add();
+		}
+		
+			
+		series.drawDataLabels();
+
+		// initiate the animation
+		if (doAnimation) {
+			series.animate(true);
+		}
+		
+		// cache attributes for shapes
+		series.getAttribs();
+		
+		// draw the graph if any
+		if (series.drawGraph) {
+			series.drawGraph();
+		}
+				
+		// draw the points
+		series.drawPoints();
+		
+		// draw the mouse tracking area
+		if (series.options.enableMouseTracking !== false) {
+			series.drawTracker();
+		}
+		
+		// run the animation
+		if (doAnimation) {
+			series.animate();
+		}
+		
+		
+		series.isDirty = false; // means data is in accordance with what you see
+		
+	},
+	
+	/**
+	 * Redraw the series after an update in the axes.
+	 */
+	redraw: function() {
+		var series = this;
+			
+		series.translate();
+		series.setTooltipPoints(true);
+		series.render();
+	},
+	
+	/**
+	 * Set the state of the graph
+	 */
+	setState: function(state) {
+		var series = this,
+			options = series.options,
+			graph = series.graph,
+			stateOptions = options.states,
+			stateMarkerGraphic = series.stateMarkerGraphic,
+			lineWidth = options.lineWidth;
+
+		state = state || NORMAL_STATE;
+				
+		if (series.state != state) {
+			series.state = state;
+			
+			if (stateOptions[state] && stateOptions[state].enabled === false) {
+				return;
+			}
+		
+			if (state) {				
+				lineWidth = stateOptions[state].lineWidth || lineWidth;
+			} else if (stateMarkerGraphic) {
+				stateMarkerGraphic.hide();
+			}
+			
+			if (graph) {
+				graph.animate({
+					'stroke-width': lineWidth
+				}, state ? 0 : 500);
+			}
+		}
+	},
+	
+	/**
+	 * Set the visibility of the graph
+	 * 
+	 * @param vis {Boolean} True to show the series, false to hide. If UNDEFINED,
+	 *        the visibility is toggled.
+	 */
+	setVisible: function(vis, redraw) {
+		var series = this,
+			chart = series.chart,
+			legendItem = series.legendItem,
+			seriesGroup = series.group,
+			seriesTracker = series.tracker,
+			dataLabelsGroup = series.dataLabelsGroup,
+			showOrHide,
+			i,
+			data = series.data,
+			point,
+			ignoreHiddenSeries = chart.options.chart.ignoreHiddenSeries,
+			oldVisibility = series.visible;
+		
+		// if called without an argument, toggle visibility
+		series.visible = vis = vis === UNDEFINED ? !oldVisibility : vis;
+		showOrHide = vis ? 'show' : 'hide';
+		
+		if (vis) {
+			series.isDirty = ignoreHiddenSeries; // when series is initially hidden
+		}	
+		
+		// show or hide series
+		if (seriesGroup) { // pies don't have one
+			seriesGroup[showOrHide]();
+		}
+		
+		// show or hide trackers
+		if (seriesTracker) {
+			seriesTracker[showOrHide]();
+		} else {
+			i = data.length;
+			while (i--) {
+				point = data[i];
+				if (point.tracker) {
+					point.tracker[showOrHide]();
+				}
+			}
+		}
+		
+		
+		if (dataLabelsGroup) {
+			dataLabelsGroup[showOrHide]();
+		}
+		
+		if (legendItem) {
+			chart.legend.colorizeItem(series, vis);
+		}
+			
+		
+		// rescale
+		if (ignoreHiddenSeries) {
+			
+			// in a stack, all other series are affected
+			if (series.options.stacking) {
+				each (chart.series, function(otherSeries) {
+					if (otherSeries.options.stacking && otherSeries.visible) { 
+						otherSeries.isDirty = true;
+					}
+				});
+			} 
+			
+		}
+		if (redraw !== false) {
+			chart.redraw();
+		}
+		
+		fireEvent(series, showOrHide);
+	},
+	
+	/**
+	 * Show the graph
+	 */
+	show: function() {
+		this.setVisible(true);
+	},
+	
+	/**
+	 * Hide the graph
+	 */
+	hide: function() {
+		this.setVisible(false);
+	},
+	
+	
+	/**
+	 * Set the selected state of the graph
+	 * 
+	 * @param selected {Boolean} True to select the series, false to unselect. If
+	 *        UNDEFINED, the selection state is toggled.
+	 */
+	select: function(selected) {
+		var series = this;
+		// if called without an argument, toggle
+		series.selected = selected = (selected === UNDEFINED) ? !series.selected : selected;
+
+		if (series.checkbox) {
+			series.checkbox.checked = selected;
+		}
+		
+		fireEvent(series, selected ? 'select' : 'unselect');
+	},
+	
+	
+	/**
+	 * Draw the tracker object that sits above all data labels and markers to
+	 * track mouse events on the graph or points. For the line type charts
+	 * the tracker uses the same graphPath, but with a greater stroke width
+	 * for better control.
+	 */
+	drawTracker: function() {
+		var series = this,
+			options = series.options,
+			trackerPath = series.graphPath,
