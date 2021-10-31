@@ -6928,3 +6928,419 @@ Series.prototype = {
 		if (series.xAxis && series.xAxis.reversed) {
 			data = data.reverse();//reverseArray(data);
 		}
+		each (data, function(point, i) {
+			
+			
+			if (!series.tooltipPoints) { // only create the text the first time, not on zoom
+				point.setTooltipText();
+			}
+			
+			low = data[i - 1] ? data [i - 1].high + 1 : 0;
+			high = point.high = data[i + 1] ? (
+				mathFloor((point.plotX + (data[i + 1] ? 
+					data[i + 1].plotX : plotSize)) / 2)) :
+					plotSize;
+			
+			while (low <= high) {
+				tooltipPoints[inverted ? plotSize - low++ : low++] = point;
+			}
+		});
+		series.tooltipPoints = tooltipPoints;
+	},
+	
+	
+
+	
+	/**
+	 * Series mouse over handler
+	 */
+	onMouseOver: function() {
+		var series = this,
+			chart = series.chart,
+			hoverSeries = chart.hoverSeries,
+			stateMarkerGraphic = series.stateMarkerGraphic;
+			
+		if (chart.mouseIsDown) {
+			return;
+		}
+		
+		if (stateMarkerGraphic) {
+			stateMarkerGraphic.show();
+		}
+		
+		// set normal state to previous series
+		if (hoverSeries && hoverSeries != series) {
+			hoverSeries.onMouseOut();
+		}
+		
+		// trigger the event, but to save processing time, 
+		// only if defined
+		if (series.options.events.mouseOver) { 
+			fireEvent(series, 'mouseOver');
+		}
+		
+		
+		// bring to front
+		// Todo: optimize. This is one of two operations slowing down the tooltip in Firefox.
+		// Can the tracking be done otherwise?
+		if (series.tracker) {
+			series.tracker.toFront();
+		}
+		
+		// hover this
+		series.setState(HOVER_STATE);
+		chart.hoverSeries = series;
+		
+	},
+	
+	/**
+	 * Series mouse out handler
+	 */
+	onMouseOut: function() {
+		// trigger the event only if listeners exist
+		var series = this,
+			options = series.options,
+			chart = series.chart,
+			tooltip = chart.tooltip,
+			hoverPoint = chart.hoverPoint;
+		
+		// trigger mouse out on the point, which must be in this series
+		if (hoverPoint) {
+			hoverPoint.onMouseOut();
+		}		
+		
+		// fire the mouse out event
+		if (series && options.events.mouseOut) { 
+			fireEvent(series, 'mouseOut');
+		}
+		
+		
+		// hide the tooltip
+		if (tooltip && !options.stickyTracking) {
+			tooltip.hide();
+		}
+		
+		// set normal state
+		series.setState();
+		chart.hoverSeries = null;		
+	},
+	
+	/**
+	 * Animate in the series
+	 */
+	animate: function(init) {
+		var series = this,
+			chart = series.chart,
+			clipRect = series.clipRect;
+		if (init) { // initialize the animation
+			if (!clipRect.isAnimating) { // apply it only for one of the series
+				clipRect.attr( 'width', 0 );
+				clipRect.isAnimating = true;
+			}
+			
+		} else { // run the animation
+			clipRect.animate({ 
+				width: chart.plotSizeX 
+			}, {
+				complete: function() {
+					clipRect.isAnimating = false;
+				}, 
+				duration: 1000
+			});
+			
+			// delete this function to allow it only once
+			this.animate = null;
+		}
+	},
+	
+	/**
+	 * Draw the markers
+	 */
+	drawPoints: function(){
+		var series = this,
+			pointAttr,
+			data = series.data, 
+			chart = series.chart,
+			plotX,
+			plotY,
+			i,
+			point,
+			radius,
+			graphic;
+		
+		if (series.options.marker.enabled) {
+			i = data.length;
+			while (i--) {
+				point = data[i];
+				plotX = point.plotX;
+				plotY = point.plotY;
+				graphic = point.graphic;
+				
+				// only draw the point if y is defined
+				if (plotY !== UNDEFINED) {
+
+					/* && removed this code because points stayed after zoom
+						point.plotX >= 0 && point.plotX <= chart.plotSizeX &&
+						point.plotY >= 0 && point.plotY <= chart.plotSizeY*/
+					
+					// shortcuts
+					pointAttr = point.pointAttr[point.selected ? SELECT_STATE : NORMAL_STATE];
+					radius = pointAttr.r;
+					
+					
+					if (graphic) { // update
+						graphic.attr({
+							x: plotX,
+							y: plotY,
+							r: radius
+						});
+					} else {
+						point.graphic = chart.renderer.symbol(
+							pick(point.marker && point.marker.symbol, series.symbol),
+							plotX,
+							plotY, 
+							radius
+						)
+						.attr(pointAttr)
+						.add(series.group);
+					}
+				}
+			}
+		}
+		
+	},
+	
+	/**
+	 * Convert state properties from API naming conventions to SVG attributes
+	 * 
+	 * @param {Object} options API options object
+	 * @param {Object} base1 SVG attribute object to inherit from
+	 * @param {Object} base2 Second level SVG attribute object to inherit from
+	 */
+	convertAttribs: function(options, base1, base2, base3) {
+		var conversion = this.pointAttrToOptions,
+			attr,
+			option,
+			obj = {};
+		
+		options = options || {};
+		base1 = base1 || {};
+		base2 = base2 || {};
+		base3 = base3 || {};
+		
+		for (attr in conversion) {
+			option = conversion[attr];
+			obj[attr] = pick(options[option], base1[attr], base2[attr], base3[attr]);		 
+		}
+		return obj;
+	},
+	
+	/**
+	 * Get the state attributes. Each series type has its own set of attributes
+	 * that are allowed to change on a point's state change. Series wide attributes are stored for
+	 * all series, and additionally point specific attributes are stored for all 
+	 * points with individual marker options. If such options are not defined for the point,
+	 * a reference to the series wide attributes is stored in point.pointAttr.
+	 */
+	getAttribs: function() {
+		var series = this, 
+			normalOptions = series.options.marker || series.options,
+			stateOptions = normalOptions.states,
+			stateOptionsHover = stateOptions[HOVER_STATE],
+			pointStateOptionsHover,
+			normalDefaults = {},
+			seriesColor = series.color,
+			data = series.data,
+			i,
+			point,
+			seriesPointAttr = [],
+			pointAttr,
+			pointAttrToOptions = series.pointAttrToOptions,
+			hasPointSpecificOptions;
+			//chart = series.chart;
+			
+		// series type specific modifications
+		if (series.options.marker) { // line, spline, area, areaspline, scatter
+			
+			// if no color is given for the point, use the general series color
+			normalDefaults = {
+				stroke: seriesColor,
+				fill: seriesColor
+			};
+			
+			// if no hover radius is given, default to normal radius + 2  
+			stateOptionsHover.radius = stateOptionsHover.radius || normalOptions.radius + 2;
+			stateOptionsHover.lineWidth = stateOptionsHover.lineWidth || normalOptions.lineWidth + 1;
+			
+		} else { // column, bar, pie
+			
+			// if no color is given for the point, use the general series color
+			normalDefaults = {
+				fill: seriesColor
+			};
+			
+			// if no hover color is given, brighten the normal color
+			stateOptionsHover.color = stateOptionsHover.color || 
+				Color(stateOptionsHover.color || seriesColor)
+					.brighten(stateOptionsHover.brightness).get();
+		}
+		
+		// general point attributes for the series normal state
+		seriesPointAttr[NORMAL_STATE] = series.convertAttribs(normalOptions, normalDefaults);
+		
+		// HOVER_STATE and SELECT_STATE states inherit from normal state except the default radius
+		each([HOVER_STATE, SELECT_STATE], function(state) {
+			seriesPointAttr[state] = 
+					series.convertAttribs(stateOptions[state], seriesPointAttr[NORMAL_STATE]);
+		});
+				
+		// set it
+		series.pointAttr = seriesPointAttr;
+		
+		
+		// Generate the point-specific attribute collections if specific point
+		// options are given. If not, create a referance to the series wide point 
+		// attributes
+		i = data.length;
+		while (i--) {
+			point = data[i];
+			normalOptions = (point.options && point.options.marker) || point.options;
+			if (normalOptions && normalOptions.enabled === false) {
+				normalOptions.radius = 0;
+			}
+			hasPointSpecificOptions = false;
+			
+			// check if the point has specific visual options
+			if (point.options) {
+				for (var key in pointAttrToOptions) {
+					if (defined(normalOptions[pointAttrToOptions[key]])) {
+						hasPointSpecificOptions = true;
+					}
+				}
+			}
+			
+			
+			
+			// a specific marker config object is defined for the individual point:
+			// create it's own attribute collection
+			if (hasPointSpecificOptions) {
+
+				pointAttr = [];
+				stateOptions = normalOptions.states || {}; // reassign for individual point
+				pointStateOptionsHover = stateOptions[HOVER_STATE] = stateOptions[HOVER_STATE] || {};
+				
+				// if no hover color is given, brighten the normal color
+				if (!series.options.marker) { // column, bar, point
+					pointStateOptionsHover.color = 
+						Color(pointStateOptionsHover.color || point.options.color)
+							.brighten(pointStateOptionsHover.brightness || 
+								stateOptionsHover.brightness).get();
+				
+				}
+				
+				// normal point state inherits series wide normal state
+				pointAttr[NORMAL_STATE] = series.convertAttribs(normalOptions, seriesPointAttr[NORMAL_STATE]);
+									
+				// inherit from point normal and series hover
+				pointAttr[HOVER_STATE] = series.convertAttribs(
+					stateOptions[HOVER_STATE],
+					seriesPointAttr[HOVER_STATE],
+					pointAttr[NORMAL_STATE]
+				);
+				// inherit from point normal and series hover
+				pointAttr[SELECT_STATE] = series.convertAttribs(
+					stateOptions[SELECT_STATE],
+					seriesPointAttr[SELECT_STATE],
+					pointAttr[NORMAL_STATE]
+				);
+				
+				
+				
+			// no marker config object is created: copy a reference to the series-wide
+			// attribute collection
+			} else {
+				pointAttr = seriesPointAttr;
+			}
+		
+			point.pointAttr = pointAttr;
+
+		}
+
+	},
+
+	
+	/**
+	 * Clear DOM objects and free up memory
+	 */
+	destroy: function() {
+		var series = this,
+			chart = series.chart,
+			chartSeries = chart.series,
+			clipRect = series.clipRect,
+			prop;
+			
+		// remove all events
+		removeEvent(series);
+			
+		// remove legend items
+		if (series.legendItem) {
+			series.chart.legend.destroyItem(series);
+		}
+		
+		// destroy all points with their elements
+		each (series.data, function(point) {
+			point.destroy();
+		});
+		
+		// destroy all SVGElements associated to the series
+		each(['area', 'graph', 'dataLabelsGroup', 'group', 'tracker'], function(prop) {
+			if (series[prop]) {
+				series[prop].destroy();
+			}
+		});
+		if (clipRect && clipRect != series.chart.clipRect) {
+			clipRect.destroy();
+		}
+		
+		// remove from hoverSeries
+		if (chart.hoverSeries == series) {
+			chart.hoverSeries = null;
+		}
+		
+		// loop through the chart series to locate the series and remove it
+		each(chartSeries, function(existingSeries, i) {
+			if (existingSeries == series) {
+				chartSeries.splice(i, 1);
+			}
+		});
+				
+		// clear all members
+		for (prop in series) {
+			delete series[prop];
+		} 
+	},
+	
+	/**
+	 * Draw the data labels
+	 */
+	drawDataLabels: function() {
+		if (this.options.dataLabels.enabled) {
+			var series = this,
+				x, 
+				y, 
+				data = series.data, 
+				options = series.options.dataLabels,
+				str, 
+				dataLabelsGroup = series.dataLabelsGroup, 
+				chart = series.chart, 
+				inverted = chart.inverted,
+				seriesType = series.type,
+				color,
+				align;
+				
+			// create a separate group for the data labels to avoid rotation
+			if (!dataLabelsGroup) {
+				dataLabelsGroup = series.dataLabelsGroup = 
+					chart.renderer.g(PREFIX +'data-labels')
+						.attr({ 
+							visibility: series.visible ? VISIBLE : HIDDEN,
