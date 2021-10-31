@@ -8593,3 +8593,133 @@ var PieSeries = extendClass(Series, {
 				innerR: positions[3] / 2,
 				start: start,
 				end: end
+			};
+			
+			// center for the sliced out slice
+			angle = (end + start) / 2;
+			point.slicedTranslation = map([
+				mathCos(angle) * slicedOffset + chart.plotLeft, 
+				mathSin(angle) * slicedOffset + chart.plotTop
+			], mathRound);
+			
+			
+			// set the anchor point for tooltips
+			point.tooltipPos = [
+				positions[0] + mathCos(angle) * positions[2] * 0.35,
+				positions[1] + mathSin(angle) * positions[2] * 0.35
+			];
+			
+			// API properties
+			point.percentage = fraction * 100;
+			point.total = total;
+			
+		});
+		
+		this.setTooltipPoints();
+	},
+	
+	/**
+	 * Render the slices
+	 */
+	render: function() {
+		var series = this;
+		// cache attributes for shapes
+		series.getAttribs();
+
+		this.drawPoints();
+		
+		// draw the mouse tracking area
+		if (series.options.enableMouseTracking !== false) {
+			series.drawTracker();
+		}
+		
+		this.drawDataLabels();
+		
+		series.isDirty = false; // means data is in accordance with what you see
+	},
+	
+	/**
+	 * Draw the data points
+	 */
+	drawPoints: function() {
+		var series = this,
+			chart = series.chart,
+			renderer = chart.renderer,
+			groupTranslation,
+			//center,
+			graphic,
+			shapeArgs;
+		
+		// draw the slices
+		each (series.data, function(point) {
+			graphic = point.graphic;
+			shapeArgs = point.shapeArgs;
+
+			// create the group the first time
+			if (!point.group) {
+				// if the point is sliced, use special translation, else use plot area traslation
+				groupTranslation = point.sliced ? point.slicedTranslation : [chart.plotLeft, chart.plotTop];
+				point.group = renderer.g('point')
+					.attr({ zIndex: 3 })
+					.add()
+					.translate(groupTranslation[0], groupTranslation[1]);
+			}
+			
+			// draw the slice
+			if (graphic) {
+				graphic.attr(shapeArgs);
+			} else {
+				point.graphic = 
+					renderer.arc(shapeArgs)
+					.attr(point.pointAttr[NORMAL_STATE])
+					.add(point.group);
+			}
+			
+			// detect point specific visibility
+			if (point.visible === false) {
+				point.setVisible(false);
+			}
+					
+		});
+		
+	},
+	
+	/**
+	 * Draw point specific tracker objects. Inherit directly from column series.
+	 */
+	drawTracker: ColumnSeries.prototype.drawTracker,
+	
+	/**
+	 * Pies don't have point marker symbols
+	 */
+	getSymbol: function() {}
+	
+});
+seriesTypes.pie = PieSeries;
+
+
+// global variables
+win.Highcharts = {
+	Chart: Chart,
+	dateFormat: dateFormat,
+	getOptions: getOptions,
+	numberFormat: numberFormat,
+	Point: Point,
+	Renderer: Renderer,
+	seriesTypes: seriesTypes,
+	setOptions: setOptions,
+	Series: Series,
+		
+	// Expose utility funcitons for modules
+	addEvent: addEvent,
+	createElement: createElement,
+	discardElement: discardElement,
+	css: css,
+	each: each,
+	extend: extend,
+	map: map,
+	merge: merge,
+	pick: pick,
+	extendClass: extendClass
+};
+})();
