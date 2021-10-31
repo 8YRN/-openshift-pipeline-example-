@@ -8166,3 +8166,430 @@ var ColumnSeries = extendClass(Series, {
 			// make small columns responsive to mouse
 			point.trackerArgs = defined(trackerY) && merge(point.shapeArgs, { 
 				height: 6,
+				y: trackerY
+			});
+			
+		});
+		
+	},
+	
+	getSymbol: function(){
+	},
+	
+	/** 
+	 * Columns have no graph
+	 */
+	drawGraph: function() {},
+	
+	/**
+	 * Draw the columns. For bars, the series.group is rotated, so the same coordinates
+	 * apply for columns and bars. This method is inherited by scatter series.
+	 * 
+	 */
+	drawPoints: function() {
+		var series = this,
+			options = series.options,
+			renderer = series.chart.renderer,
+			graphic,
+			shapeArgs;		
+		
+		
+		// draw the columns
+		each (series.data, function(point) {			
+			
+			if (defined(point.plotY)) {
+				graphic = point.graphic;
+				shapeArgs = point.shapeArgs;
+				if (graphic) { // update
+					graphic.attr(shapeArgs);
+				
+				} else {
+					point.graphic = renderer[point.shapeType](shapeArgs)
+						.attr(point.pointAttr[point.selected ? SELECT_STATE : NORMAL_STATE])
+						.add(series.group)
+						.shadow(options.shadow);
+				}
+			
+			}
+		});
+	},
+	/**
+	 * Draw the individual tracker elements.
+	 * This method is inherited by scatter and pie charts too.
+	 */
+	drawTracker: function() {
+		var series = this,
+			chart = series.chart,
+			renderer = chart.renderer,
+			shapeArgs,
+			tracker,
+			trackerLabel = +new Date(),
+			cursor = series.options.cursor,
+			css = cursor && { cursor: cursor },
+			rel;
+			
+		each (series.data, function(point) {
+			tracker = point.tracker;
+			shapeArgs = point.trackerArgs || point.shapeArgs;
+			
+			if (tracker) {// update
+				tracker.attr(shapeArgs);
+				
+			} else {
+				point.tracker = 
+					renderer[point.shapeType](shapeArgs)
+					.attr({
+						isTracker: trackerLabel,
+						fill: TRACKER_FILL,
+						visibility: series.visible ? VISIBLE : HIDDEN,
+						zIndex: 1
+					})
+					.on('mouseover', function(event) {
+						rel = event.relatedTarget || event.fromElement;
+						if (chart.hoverSeries != series && attr(rel, 'isTracker') != trackerLabel) {
+							series.onMouseOver();
+						}
+						point.onMouseOver();
+						
+					})
+					.on('mouseout', function(event) {
+						if (!series.options.stickyTracking) {
+							rel = event.relatedTarget || event.toElement;
+							if (attr(rel, 'isTracker') != trackerLabel) {
+								series.onMouseOut();
+							}
+						}
+					})
+					.css(css)
+					.add(chart.trackerGroup);
+			}
+		});				
+	},
+	
+	/**
+	 * Extend the base cleanData method by getting the closest pair of points.
+	 * This is needed for determining the automatic point width.
+	 */
+	cleanData: function() {
+		var series = this,
+			data = series.data,
+			interval,
+			smallestInterval,
+			closestPoints,
+			i;
+			
+		// apply the parent method
+		Series.prototype.cleanData.apply(series);
+			
+		// find the closes pair of points
+		for (i = data.length - 1; i >= 0; i--) {
+			if (data[i - 1]) {
+				interval = data[i].x - data[i - 1].x;
+				if (smallestInterval === UNDEFINED || interval < smallestInterval) {
+					smallestInterval = interval;
+					closestPoints = i;	
+				}
+			}
+		}
+		series.closestPoints = closestPoints;
+	},
+	
+	/**
+	 * Animate the column heights one by one from zero
+	 * @param {Boolean} init Whether to initialize the animation or run it 
+	 */
+	animate: function(init) {
+		var series = this,
+			data = series.data;
+			
+		if (!init) { // run the animation
+			/*
+			 * Note: Ideally the animation should be initialized by calling
+			 * series.group.hide(), and then calling series.group.show()
+			 * after the animation was started. But this rendered the shadows
+			 * invisible in IE8 standards mode. If the columns flicker on large
+			 * datasets, this is the cause.
+			 */
+			
+			each (data, function(point) {
+				var graphic = point.graphic;
+				
+				if (graphic) {
+					// start values
+					graphic.attr({ 
+						height: 0,
+						y: series.yAxis.translate(0, 0, 1)
+					});
+					
+					// animate
+					graphic.animate({ 
+						height: point.barH,
+						y: point.barY
+					}, {
+						duration: 1000
+					});
+				}
+			});
+			
+			
+			// delete this function to allow it only once
+			series.animate = null;
+		}
+		
+	},
+	/**
+	 * Remove this series from the chart
+	 */
+	remove: function() {
+		var series = this,
+			chart = series.chart;
+			
+		// column and bar series affects other series of the same type
+		// as they are either stacked or grouped
+		if (chart.hasRendered) {
+			each (chart.series, function(otherSeries) {
+				if (otherSeries.type == series.type) {
+					otherSeries.isDirty = true;
+				}
+			});
+		}
+		
+		Series.prototype.remove.apply(series, arguments);
+	}
+});
+seriesTypes.column = ColumnSeries;
+
+var BarSeries = extendClass(ColumnSeries, {
+	type: 'bar',
+	init: function(chart) {
+		chart.inverted = this.inverted = true;
+		ColumnSeries.prototype.init.apply(this, arguments);
+	}
+});
+seriesTypes.bar = BarSeries;
+
+/**
+ * The scatter series class
+ */
+var ScatterSeries = extendClass(Series, {
+	type: 'scatter',
+	
+	/**
+	 * Extend the base Series' translate method by adding shape type and
+	 * arguments for the point trackers
+	 */
+	translate: function() {
+		var series = this;
+
+		Series.prototype.translate.apply(series);
+
+		each (series.data, function(point) {
+			point.shapeType = 'circle';
+			point.shapeArgs = {
+				x: point.plotX,
+				y: point.plotY,
+				r: series.chart.options.tooltip.snap
+			};
+		});
+	},
+	
+	
+	/**
+	 * Create individual tracker elements for each point
+	 */
+	//drawTracker: ColumnSeries.prototype.drawTracker,
+	drawTracker: function() {
+		var series = this,
+			cursor = series.options.cursor,
+			css = cursor && { cursor: cursor },
+			graphic;
+			
+		each(series.data, function(point) {
+			graphic = point.graphic;
+			if (graphic) { // doesn't exist for null points
+				graphic
+					.attr({ isTracker: true })
+					.on('mouseover', function(event) {
+						series.onMouseOver();
+						point.onMouseOver();					
+					})
+					.on('mouseout', function(event) {
+						if (!series.options.stickyTracking) {
+							series.onMouseOut();
+						}
+					})
+					.css(css);
+			}
+		});
+
+	},
+	
+	/**
+	 * Cleaning the data is not necessary in a scatter plot
+	 */
+	cleanData: function() {}
+});
+seriesTypes.scatter = ScatterSeries;
+
+/**
+ * Extended point object for pies
+ */
+var PiePoint = extendClass(Point, {
+	/**
+	 * Initiate the pie slice
+	 */
+	init: function () {
+		
+		Point.prototype.init.apply(this, arguments);
+		
+		var point = this,
+			//series = point.series,
+			toggleSlice;
+		
+		//visible: options.visible !== false,
+		extend(point, {
+			visible: point.visible !== false,
+			name: pick(point.name, 'Slice')
+		});
+		
+		// add event listener for select
+		toggleSlice = function() {
+			point.slice();
+		};
+		addEvent(point, 'select', toggleSlice);
+		addEvent(point, 'unselect', toggleSlice);
+		
+		return point;
+	},
+	
+	/**
+	 * Toggle the visibility of the pie slice
+	 * @param {Boolean} vis Whether to show the slice or not. If undefined, the
+	 *    visibility is toggled
+	 */
+	setVisible: function(vis) {
+	
+		var point = this, 
+			chart = point.series.chart,
+			method;
+		
+		// if called without an argument, toggle visibility
+		point.visible = vis = vis === UNDEFINED ? !point.visible : vis;
+		
+		method = vis ? 'show' : 'hide';
+		
+		point.group[method]();
+		if (point.tracker) {
+			point.tracker[method]();
+		}
+		if (point.dataLabel) {
+			point.dataLabel[method]();
+		}
+		
+		if (point.legendItem) {
+			chart.legend.colorizeItem(point, vis);
+		}
+	},
+	
+	/**
+	 * Set or toggle whether the slice is cut out from the pie
+	 * @param {Boolean} sliced When undefined, the slice state is toggled 
+	 * @param {Boolean} redraw Whether to redraw the chart. True by default.
+	 */
+	slice: function(sliced, redraw) {
+		var point = this,
+			series = point.series,
+			chart = series.chart,
+			slicedTranslation = point.slicedTranslation;
+		
+		// redraw is true by default
+		redraw = pick(redraw, true);
+			
+		// if called without an argument, toggle
+		sliced = point.sliced = defined(sliced) ? sliced : !point.sliced;
+		
+		point.group.animate({
+			translateX: (sliced ? slicedTranslation[0] : chart.plotLeft),
+			translateY: (sliced ? slicedTranslation[1] : chart.plotTop)
+		}, 100);
+		
+	}
+});
+
+/**
+ * The Pie series class
+ */
+var PieSeries = extendClass(Series, {
+	type: 'pie',
+	isCartesian: false,
+	pointClass: PiePoint,
+	pointAttrToOptions: { // mapping between SVG attributes and the corresponding options
+		stroke: 'borderColor',
+		'stroke-width': 'borderWidth',
+		fill: 'color'
+	},
+	
+	/**
+	 * Pies have one color each point
+	 */
+	getColor: function() {
+		// record first color for use in setData
+		this.initialColor = colorCounter;
+	},
+	
+	
+	translate: function() {
+		var total = 0,
+			series = this,
+			cumulative = -0.25, // start at top
+			options = series.options,
+			slicedOffset = options.slicedOffset,
+			positions = options.center,
+			chart = series.chart,
+			plotWidth = chart.plotWidth,
+			plotHeight = chart.plotHeight,
+			start,
+			end,
+			angle,
+			data = series.data,
+			circ = 2 * math.PI,
+			fraction,
+			smallestSize = mathMin(plotWidth, plotHeight),
+			isPercent;
+			
+		// get positions - either an integer or a percentage string must be given
+		positions.push(options.size, options.innerSize || 0);
+		positions = map (positions, function(length, i) {
+			
+			isPercent = /%$/.test(length);			
+			return isPercent ? 
+				// i == 0: centerX, relative to width
+				// i == 1: centerY, relative to height
+				// i == 2: size, relative to height
+				[plotWidth, plotHeight, smallestSize, smallestSize][i] *
+					parseInt(length, 10) / 100:
+				length;
+		});
+					
+		// get the total sum
+		each (data, function(point) {
+			total += point.y;
+		});
+		
+		each (data, function(point) {
+			// set start and end angle
+			fraction = total ? point.y / total : 0;
+			start = cumulative * circ;
+			cumulative += fraction;
+			end = cumulative * circ;
+			
+			
+			// set the shape
+			point.shapeType = 'arc';
+			point.shapeArgs = {
+				x: positions[0],
+				y: positions[1],
+				r: positions[2] / 2,
+				innerR: positions[3] / 2,
+				start: start,
+				end: end
