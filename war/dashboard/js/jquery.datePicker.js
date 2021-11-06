@@ -1042,3 +1042,16 @@
 	if ($.fn.bgIframe == undefined) {
 		$.fn.bgIframe = function() {return this; };
 	};
+
+
+	// clean-up
+	$(window)
+		.bind('unload', function() {
+			var els = $.event._dpCache || [];
+			for (var i in els) {
+				$(els[i].ele)._dpDestroy();
+			}
+		});
+		
+	
+})(jQuery);
