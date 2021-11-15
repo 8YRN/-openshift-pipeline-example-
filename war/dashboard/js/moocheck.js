@@ -114,3 +114,64 @@ var FancyForm = {
 					 c.onclick();
 			});
 			c.addEvent('mouseup', function(f){
+				if(f.event.stopPropagation) f.event.stopPropagation();
+			});
+			c.addEvent('mousedown', function(f){
+				if(f.event.stopPropagation) f.event.stopPropagation();
+			});
+			if(extraclass = FancyForm.extra[chk.type])
+				chk.addClass(extraclass);
+			if(extraclass = FancyForm.extra['all'])
+				chk.addClass(extraclass);
+		});
+		FancyForm.chks.combine(newChks);
+		FancyForm.initing = 0;
+	},
+	update: function(chk){
+		if(chk.inputElement.getProperty('checked')) {
+			chk.removeClass(FancyForm.offclasses[chk.type]);
+			chk.addClass(FancyForm.onclasses[chk.type]);
+			if (chk.type == 'radio'){
+				FancyForm.chks.each(function(other){
+					if (other.name == chk.name && other != chk) {
+						other.inputElement.setProperty('checked', false);
+						FancyForm.update(other);
+					}
+				});
+			}
+			if(extraclass = FancyForm.extra['on'])
+				chk.addClass(extraclass);
+			if(extraclass = FancyForm.extra['off'])
+				chk.removeClass(extraclass);
+			if(!FancyForm.initing)
+				FancyForm.onSelect(chk);
+		} else {
+			chk.removeClass(FancyForm.onclasses[chk.type]);
+			chk.addClass(FancyForm.offclasses[chk.type]);
+			if(extraclass = FancyForm.extra['off'])
+				chk.addClass(extraclass);
+			if(extraclass = FancyForm.extra['on'])
+				chk.removeClass(extraclass);
+			if(!FancyForm.initing)
+				FancyForm.onDeselect(chk);
+		}
+		if(!FancyForm.initing)
+			chk.inputElement.focus();
+	},
+	all: function(){
+		FancyForm.chks.each(function(chk){
+			chk.inputElement.setProperty('checked', 'checked');
+			FancyForm.update(chk);
+		});
+	},
+	none: function(){
+		FancyForm.chks.each(function(chk){
+			chk.inputElement.setProperty('checked', false);
+			FancyForm.update(chk);
+		});
+	}
+};
+
+window.addEvent('domready', function(){
+	FancyForm.start();
+});
