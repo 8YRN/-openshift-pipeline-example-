@@ -387,3 +387,256 @@ extend (Chart.prototype, {
 			chartWidth = chart.chartWidth,
 			chartHeight = chart.chartHeight,
 			cacheName = 'cache-'+ name,
+			menu = chart[cacheName],
+			menuPadding = mathMax(width, height), // for mouse leave detection
+			boxShadow = '3px 3px 10px #888',
+			innerMenu,
+			hide,
+			menuStyle; 
+		
+		// create the menu only the first time
+		if (!menu) {
+			
+			// create a HTML element above the SVG		
+			chart[cacheName] = menu = createElement(DIV, {
+				className: PREFIX + name
+			}, {
+				position: ABSOLUTE,
+				zIndex: 1000,
+				padding: menuPadding + PX
+			}, chart.container);
+			
+			innerMenu = createElement(DIV, null, 
+				extend({
+					MozBoxShadow: boxShadow,
+					WebkitBoxShadow: boxShadow,
+					boxShadow: boxShadow
+				}, navOptions.menuStyle) , menu);
+			
+			hide = function() {
+				css(menu, { display: NONE });
+			};
+			addEvent(menu, 'mouseleave', hide);
+			
+			// create the items
+			each(items, function(item) {
+				if (item) {
+					createElement(DIV, {
+						onclick: function() {
+							hide();
+							item.onclick.apply(chart, arguments);
+						},
+						onmouseover: function() {
+							css(this, navOptions.menuItemHoverStyle);
+						},
+						onmouseout: function() {
+							css(this, menuItemStyle);
+						},
+						innerHTML: item.text || HC.getOptions().lang[item.textKey]
+					}, extend({
+						cursor: 'pointer'
+					}, menuItemStyle), innerMenu);
+				}
+			});
+			
+			chart.exportMenuWidth = menu.offsetWidth;
+			chart.exportMenuHeight = menu.offsetHeight;
+		}
+		
+		menuStyle = { display: 'block' };
+		
+		// if outside right, right align it
+		if (x + chart.exportMenuWidth > chartWidth) {
+			menuStyle.right = (chartWidth - x - width - menuPadding) + PX;
+		} else {
+			menuStyle.left = (x - menuPadding) + PX;
+		}
+		// if outside bottom, bottom align it
+		if (y + height + chart.exportMenuHeight > chartHeight) {
+			menuStyle.bottom = (chartHeight - y - menuPadding)  + PX;
+		} else {
+			menuStyle.top = (y + height - menuPadding) + PX;
+		}
+		
+		css(menu, menuStyle);
+	},
+	
+	/**
+	 * Add the export button to the chart
+	 */
+	addButton: function(options) {
+		var chart = this,
+			renderer = chart.renderer,
+			btnOptions = merge(chart.options.navigation.buttonOptions, options),
+			onclick = btnOptions.onclick,
+			menuItems = btnOptions.menuItems,
+			position = chart.getAlignment(btnOptions),
+			buttonLeft = position.x,
+			buttonTop = position.y,
+			buttonWidth = btnOptions.width,
+			buttonHeight = btnOptions.height,
+			box,
+			symbol,
+			button,	
+			borderWidth = btnOptions.borderWidth,
+			boxAttr = {
+				stroke: btnOptions.borderColor
+				
+			},
+			symbolAttr = {
+				stroke: btnOptions.symbolStroke,
+				fill: btnOptions.symbolFill
+			};
+			
+		if (btnOptions.enabled === false) {
+			return;
+		}
+			
+		// element to capture the click
+		function revert() {
+			symbol.attr(symbolAttr);
+			box.attr(boxAttr);
+		}
+		
+		// the box border
+		box = renderer.rect(
+			0,
+			0,
+			buttonWidth, 
+			buttonHeight,
+			btnOptions.borderRadius,
+			borderWidth
+		)
+		.translate(buttonLeft, buttonTop) // to allow gradients
+		.attr(extend({
+			fill: btnOptions.backgroundColor,
+			'stroke-width': borderWidth,
+			zIndex: 19
+		}, boxAttr)).add();
+		
+		// the invisible element to track the clicks
+		button = renderer.rect( 
+			buttonLeft,
+			buttonTop,
+			buttonWidth,
+			buttonHeight,
+			0
+		).attr({
+			fill: 'rgba(255, 255, 255, 0.001)',
+			title: HC.getOptions().lang[btnOptions._titleKey],
+			zIndex: 21
+		}).css({
+			cursor: 'pointer'
+		})
+		.on('mouseover', function() {
+			symbol.attr({
+				stroke: btnOptions.hoverSymbolStroke,
+				fill: btnOptions.hoverSymbolFill
+			});
+			box.attr({
+				stroke: btnOptions.hoverBorderColor
+			});
+		})
+		.on('mouseout', revert)		
+		.add();
+		
+		addEvent(button.element, 'click', revert);
+		
+		// add the click event
+		if (menuItems) {
+			onclick = function(e) {
+				chart.contextMenu('export-menu', menuItems, buttonLeft, buttonTop, buttonWidth, buttonHeight);
+			};
+		}
+		addEvent(button.element, 'click', function() {
+			onclick.apply(chart, arguments);
+		});
+		
+		// the icon
+		symbol = renderer.symbol(
+				btnOptions.symbol, 
+				buttonLeft + btnOptions.symbolX, 
+				buttonTop + btnOptions.symbolY, 
+				(btnOptions.symbolSize || 12) / 2
+			)
+			.attr(extend(symbolAttr, {
+				'stroke-width': btnOptions.symbolStrokeWidth || 1,
+				zIndex: 20		
+			})).add();
+		
+
+		
+	}
+});
+
+// Create the export icon
+HC.Renderer.prototype.symbols.exportIcon = function(x, y, radius) {
+	return [
+		M, // the disk
+		x - radius, y + radius,
+		L,
+		x + radius, y + radius,
+		x + radius, y + radius * 0.5,
+		x - radius, y + radius * 0.5,
+		'Z',
+		M, // the arrow
+		x, y + radius * 0.5,
+		L,
+		x - radius * 0.5, y - radius / 3,
+		x - radius / 6, y - radius / 3,
+		x - radius / 6, y - radius,
+		x + radius / 6, y - radius,
+		x + radius / 6, y - radius / 3,
+		x + radius * 0.5, y - radius / 3,
+		'Z'
+	];
+};
+// Create the print icon
+HC.Renderer.prototype.symbols.printIcon = function(x, y, radius) {
+	return [
+		M, // the printer
+		x - radius, y + radius * 0.5,
+		L,
+		x + radius, y + radius * 0.5,
+		x + radius, y - radius / 3,
+		x - radius, y - radius / 3,
+		'Z',
+		M, // the upper sheet
+		x - radius * 0.5, y - radius / 3,
+		L,
+		x - radius * 0.5, y - radius,
+		x + radius * 0.5, y - radius,
+		x + radius * 0.5, y - radius / 3,
+		'Z',
+		M, // the lower sheet
+		x - radius * 0.5, y + radius * 0.5,
+		L,
+		x - radius * 0.75, y + radius,
+		x + radius * 0.75, y + radius,
+		x + radius * 0.5, y + radius * 0.5,
+		'Z'
+	];
+};
+
+// Overwrite the HC.Chart object with added functionality for export buttons after render
+HC.Chart = function(options, callback) {
+	return new Chart(options, function(chart) {
+		var n,
+			exportingOptions = chart.options.exporting,
+			buttons = exportingOptions.buttons;		
+		
+		// add buttons
+		if (exportingOptions.enabled !== false) {	
+			for (n in buttons) {
+				chart.addButton(buttons[n]);
+			}
+		}
+		
+		// execute user callbacks
+		if (callback) {
+			callback();
+		}
+	});
+};
+
+})();
