@@ -40,4 +40,20 @@ var serverDataPlan = {
 					title: null,
 					labels: {
 						formatter: function() {
-							return Highcharts.numberFormat(t
+							return Highcharts.numberFormat(this.value*100, 0) +' %'; 
+						}
+					}
+				},
+				tooltip: {
+					formatter: function() {
+						return '<b>'+ this.series.name  +'</b><br/>' +
+							'Year: ' + Highcharts.dateFormat('%Y', this.x) + ', week: ' + getWeek(this.x, 4) + ':<br/>'+
+							''+ Highcharts.numberFormat(this.y*100, 0) +' %';
+					}
+				},
+				plotOptions: {
+					line: {
+						lineWidth: 3,
+						marker: {
+							enabled: false,
+					
