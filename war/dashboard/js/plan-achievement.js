@@ -56,4 +56,27 @@ var serverDataPlan = {
 						lineWidth: 3,
 						marker: {
 							enabled: false,
-					
+							symbol: 'circle',
+							radius: 2,
+							states: {
+								hover: {
+									enabled: true
+								}
+							}
+						}
+					}
+				},
+				legend: {
+					enabled: true
+				},
+				credits: {
+					enabled: false
+				},
+				series: serverDataPlan.allSpheres[0].series
+			};
+			
+			
+			// Produce sphere buttons
+			for(i = 0; i<serverDataPlan.allSpheres.length; i++)
+			{
+				sphere = serverDataPlan.allS
