@@ -79,4 +79,15 @@ var serverDataPlan = {
 			// Produce sphere buttons
 			for(i = 0; i<serverDataPlan.allSpheres.length; i++)
 			{
-				sphere = serverDataPlan.allS
+				sphere = serverDataPlan.allSpheres[i].sphereName;
+				
+				$('#sphereButtonsHolder').append('<button id="' + sphere + '" class="sphereButton">' + sphere + '</button>');
+			}
+			
+			// Declare on-click function
+			function changeSphere(sphereName) {
+				for(i=0; i<serverDataPlan.allSpheres.length; i++)
+				{
+					if(serverDataPlan.allSpheres[i].sphereName == sphereName)
+					{
+						planAchievementOptions.series = serverDataPlan.all
