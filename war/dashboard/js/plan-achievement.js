@@ -90,4 +90,19 @@ var serverDataPlan = {
 				{
 					if(serverDataPlan.allSpheres[i].sphereName == sphereName)
 					{
-						planAchievementOptions.series = serverDataPlan.all
+						planAchievementOptions.series = serverDataPlan.allSpheres[i].series;
+						break;
+					}
+				}
+				planAchievementGraph = new Highcharts.Chart(planAchievementOptions);
+			};
+			
+			// Assign on-click function to buttons responsible for changing spheres
+			$(function() {
+				$( ".sphereButton").click(function(){
+					changeSphere(this.id);
+				});
+			}); 
+				
+			// Produce chart
+			planAchievementGraph = new Highcharts.Chart(planAchievem
