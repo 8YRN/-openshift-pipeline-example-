@@ -105,4 +105,6 @@ var serverDataPlan = {
 			}); 
 				
 			// Produce chart
-			planAchievementGraph = new Highcharts.Chart(planAchievem
+			planAchievementGraph = new Highcharts.Chart(planAchievementOptions);
+				
+		});
