@@ -38,3 +38,13 @@
         
         //$.getJSON("../dummy-settings.json", function(settings){
         $.getJSON("settings", function(settings){
+          $('input[name="fromDate"]').val(settings.fromDate);
+          $('input[name="toDate"]').val(settings.toDate);
+          
+          $.each(settings.spheresSettings, function(i, sphere) {
+            $('input[name="' + sphere.name + '"]').val(sphere.value);
+          })
+          
+          $('input:checkbox').attr('checked', settings.fullOpt == 'TRUE');
+        });
+        
