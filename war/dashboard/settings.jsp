@@ -58,4 +58,14 @@
           }/**/
           $answer += '", ';
           $answer += '"spheresSettings":[';
-      
+          $texts = $('input.sphere');
+          $texts.each(function(i, inp){
+            $answer += '{"name":"' + inp.name + '", "value":"' + $(this).val() + '"}';
+            if (i != $texts.length - 1) {
+              $answer += ',';
+            }
+          });
+          $answer += ']';
+          $dates = $('input.date-pick');
+          $dates.each(function(i, dat) {
+       
