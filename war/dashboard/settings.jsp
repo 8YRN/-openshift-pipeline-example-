@@ -48,3 +48,14 @@
           $('input:checkbox').attr('checked', settings.fullOpt == 'TRUE');
         });
         
+        $('button').click(function() {
+          $answer = '{"userID":"' + '<%= request.getUserPrincipal().getName() %>", ';
+          $answer += '"fullOpt":"';
+          if ($('input:checkbox').get(0).value == 'on') {
+            $answer += 'TRUE';
+          } else {
+            $answer += 'FALSE';
+          }/**/
+          $answer += '", ';
+          $answer += '"spheresSettings":[';
+      
