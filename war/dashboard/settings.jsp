@@ -68,4 +68,20 @@
           $answer += ']';
           $dates = $('input.date-pick');
           $dates.each(function(i, dat) {
-       
+            $answer += ', "' + dat.name + '":"' + $(this).val() + '"';
+          });
+          $answer += "}"
+          //alert($answer);
+          $.post("settings", $answer);
+        })
+        //Lavalamp
+        jQuery("#lavaLampMenu").lavaLamp({fx: "swing", speed: 200, startItem: 1});
+      });
+    </script>
+    
+  </head>
+  <body>
+    <div id="main">
+      <div id="header-long">
+        <div id="strip"></div>
+     
