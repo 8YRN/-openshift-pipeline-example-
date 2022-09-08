@@ -108,4 +108,12 @@
           From:<br /><input type="text" name="fromDate" class="date-pick" />
           <br /><br />
           To:<br /><input type="text" name="toDate" class="date-pick"/>
-          <b
+          <br /><br />Full optimisation: <input type="checkbox" name="gull" checked="checked">
+          <br /><button>Submit</button>
+        </div>
+      </div>
+      <div id="footer">
+      </div>
+    </div>
+  </body> 
+</html>
