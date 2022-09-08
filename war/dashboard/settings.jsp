@@ -91,4 +91,14 @@
               <ul class="lamp" id="lavaLampMenu">
                   <li><a href="index.jsp">Dashboard</a></li>
                   <li><a href="#">Settings</a></li>
-                  <li><a href="stats.jsp">Stats</
+                  <li><a href="stats.jsp">Stats</a></li>
+                  <li><a href="<%= userService.createLogoutURL("/") %>">Logout</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="body">
+        <div id="settings">
+          Work: <input type="text" name="work" size="2" maxlength="2" class="sphere" />%<br />
+          Health: <input type="text" name="health" size="2" maxle
