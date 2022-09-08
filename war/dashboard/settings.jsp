@@ -101,4 +101,11 @@
       <div id="body">
         <div id="settings">
           Work: <input type="text" name="work" size="2" maxlength="2" class="sphere" />%<br />
-          Health: <input type="text" name="health" size="2" maxle
+          Health: <input type="text" name="health" size="2" maxlength="2" class="sphere" />%<br />
+          Family: <input type="text" name="family" size="2" maxlength="2" class="sphere" />%<br />
+          Recreation: <input type="text" name="recreation" size="2" maxlength="2" class="sphere" />%<br />
+          <br />
+          From:<br /><input type="text" name="fromDate" class="date-pick" />
+          <br /><br />
+          To:<br /><input type="text" name="toDate" class="date-pick"/>
+          <b
