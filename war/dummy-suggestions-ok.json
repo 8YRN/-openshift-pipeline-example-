@@ -25,4 +25,14 @@
                 "title":"s1 l1 e3",
                 "startDateTime":"Sat, 15 Jan 2011 11:00",
                 "description":"lorem",
-       
+                "spheres":["FAMILY","WORK"],
+                "type":"newevent",
+                "endDateTime":"Sat, 15 Jan 2011 12:00",
+                "repeating":""
+              }
+            ],
+            [
+              {
+                "title":"s1 l2 e1",
+                "startDateTime":"Sat, 15 Jan 2011 11:00",
+                "description":"lorem asdlfkj aslkfjas lkfjaslk fjaslkjf laskfjlask jflkas jfla
