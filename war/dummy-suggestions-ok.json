@@ -86,4 +86,13 @@
               {
                 "title":"s2 l1 e1",
                 "startDateTime":"Sat, 15 Jan 2011 11:00",
-                "description":"lorem sdfkasjfk 
+                "description":"lorem sdfkasjfk asjfl kasjflkasj flkasjf lkasjflk asjflkasj flkasjfl kasjf",
+                "spheres":["HEALTH","FAMILY","WORK","RECREATION"],
+                "type":"reschedule",
+                "endDateTime":"Sat, 15 Jan 2011 12:00",
+                "repeating":""
+              },
+              {
+                "title":"s2 l1 e2",
+                "startDateTime":"Sat, 15 Jan 2011 11:00",
+                "description":"
