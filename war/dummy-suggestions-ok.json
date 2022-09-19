@@ -106,4 +106,15 @@
               {
                 "title":"s2 l2 e1",
                 "startDateTime":"Sat, 15 Jan 2011 11:00",
-                "description":"lorem asdlfkj aslkfjas lkfjaslk fja
+                "description":"lorem asdlfkj aslkfjas lkfjaslk fjaslkjf laskfjlask jflkas jflaksj flkasdjf laksjfla skfjalskfjlakshjdf oaiwuf asodkfj asdflkj",
+                "spheres":["HEALTH","FAMILY","WORK","RECREATION"],
+                "type":"remove",
+                "endDateTime":"Sat, 15 Jan 2011 12:00",
+                "repeating":""
+              }
+            ]
+          ],
+          [
+            [
+              {
+                "title":"s3 l1 e1",
