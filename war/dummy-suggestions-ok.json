@@ -127,4 +127,14 @@
               },
               {
                 "title":"s3 l1 e2",
-                "startDat
+                "startDateTime":"Sat, 15 Jan 2011 11:00",
+                "description":"lorem",
+                "spheres":["HEALTH","FAMILY","WORK","RECREATION"],
+                "type":"remove",
+                "endDateTime":"Sat, 15 Jan 2011 12:00",
+                "repeating":""
+              },
+              {
+                "title":"s3 l1 e3",
+                "startDateTime":"Sat, 15 Jan 2011 11:00",
+              
