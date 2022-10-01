@@ -1,1 +1,12 @@
-<%@ page contentType="text/html;charset=
+<%@ page contentType="text/html;charset=UTF-8" language="java" isELIgnored="false" %>
+<%@ taglib uri="http://java.sun.com/jstl/core" prefix="c" %>
+
+<%@ page import="com.google.appengine.api.users.UserService" %>
+<%@ page import="com.google.appengine.api.users.UserServiceFactory" %>
+
+<%
+  UserService userService = UserServiceFactory.getUserService();
+  String signupUrl = "";
+
+  if (userService.isUserLoggedIn()) {
+    response.sen
