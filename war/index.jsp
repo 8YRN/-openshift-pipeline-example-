@@ -91,4 +91,10 @@ The development of mobile devices and e-mail has spread work into areas of time 
             </ul>
 
             <div class="scroll">
-  
+              <div class="scrollContainer">
+                
+                <!-- Pane that is shown first when the page loads -->
+                <div class="panel" id="home">
+                  <div id="signup-bar">
+                    <div id="signup-text">
+To start using the service all you need is a Google account with Google Calendar. Simply sign in using the button on the right and authorise our appl
