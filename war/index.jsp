@@ -138,4 +138,11 @@ To start using the service all you need is a Google account with Google Calendar
                   <span class="tour-step">5. See the results!</span>
                   <img src="img/tour/05-stats.png" />
                   <a href="#home" class="tour-next">Sign up!</a>
-            
+                  <a href="#step4" class="tour-prev">Prev</a>
+                </div>
+                
+                <div class="panel" id="help">
+                  <ul>
+                    <li>
+                      <span class="question">Is my data safe?</span>
+                      <span class="answer">Yes! We do not store your Google login nor your password and do not copy any data from your calendar. The only data we store is the data directly connected to u
