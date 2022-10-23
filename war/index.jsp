@@ -161,4 +161,19 @@ To start using the service all you need is a Google account with Google Calendar
                     </li>
                     <li>
                       <span class="question">Do I need to do everything you say?</span>
-                      <sp
+                      <span class="answer">No, you can reject any number of suggestions, but you need to understand that this will keep you further away from your desired life balance...</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+  
+          </div>
+        </div>
+
+      </div>
+      <div id="footer">
+      </div>
+    </div>
+  </body> 
+</html
