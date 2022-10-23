@@ -153,4 +153,12 @@ To start using the service all you need is a Google account with Google Calendar
                     </li>
                     <li>
                       <span class="question">Is it good?</span>
-                      <span class="an
+                      <span class="answer">Yes, very!</span>
+                    </li>
+                    <li>
+                      <span class="question">Will it make me happy?</span>
+                      <span class="answer">There is only one way to find out. But for the money we charge ($0), it is definitely worth a shot!</span>
+                    </li>
+                    <li>
+                      <span class="question">Do I need to do everything you say?</span>
+                      <sp
