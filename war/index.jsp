@@ -176,4 +176,4 @@ To start using the service all you need is a Google account with Google Calendar
       </div>
     </div>
   </body> 
-</html
+</html>
